@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>hump レンタルサロン 売上分析ダッシュボード</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI','Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh}
+
+/* ── Header ── */
+.hdr{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px 24px;display:flex;align-items:center;gap:12px}
+.hdr h1{font-size:1.25rem;font-weight:700}
+.hdr p{font-size:.78rem;opacity:.8;margin-top:2px}
+
+/* ── Upload ── */
+.up-sec{background:#fff;border-bottom:1px solid #e5e7eb;padding:16px 24px}
+.up-sec h2{font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.up-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.up-card{border:2px dashed #d1d5db;border-radius:10px;padding:14px 16px;transition:all .2s;background:#fafafa}
+.up-card.loaded{border:2px solid #10b981;background:#f0fdf4}
+.up-card.errored{border:2px solid #ef4444;background:#fef2f2}
+.up-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.up-ico{font-size:1.5rem}
+.up-info{flex:1}
+.up-title{font-weight:700;font-size:.85rem;color:#111827}
+.up-sub{font-size:.68rem;color:#9ca3af;margin-top:1px}
+.up-status{font-size:.72rem;color:#6b7280;margin-bottom:8px;min-height:16px}
+.up-card.loaded .up-status{color:#059669;font-weight:600}
+.up-card.errored .up-status{color:#dc2626}
+.up-btns{display:flex;gap:6px}
+.btn-add{flex:1;padding:5px 0;border:1px solid #667eea;border-radius:6px;background:#fff;color:#667eea;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-add:hover{background:#667eea;color:#fff}
+.btn-clear{padding:5px 10px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#9ca3af;font-size:.75rem;cursor:pointer}
+.btn-clear:hover{border-color:#ef4444;color:#ef4444}
+.file-count{display:inline-block;background:#667eea;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:4px}
+
+/* ── Global Filters ── */
+.gfilter{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.gf-group{display:flex;align-items:center;gap:8px}
+.gf-label{font-size:.75rem;font-weight:700;color:#6b7280;white-space:nowrap}
+.toggle-btns{display:flex;gap:2px;background:#f3f4f6;padding:3px;border-radius:8px}
+.tbtn{padding:4px 12px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:#6b7280;transition:all .15s}
+.tbtn.active{background:#fff;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.month-pills{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.mpill{padding:3px 10px;border-radius:20px;font-size:.73rem;font-weight:600;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#6b7280;transition:all .15s}
+.mpill:hover{border-color:#667eea;color:#667eea}
+.mpill.active{background:#667eea;border-color:#667eea;color:#fff}
+.divider{width:1px;height:20px;background:#e5e7eb}
+
+/* ── Main / Tabs ── */
+.main{padding:18px 24px}
+.tabs{display:flex;gap:2px;margin-bottom:18px;background:#fff;padding:4px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.07);overflow-x:auto}
+.tab{padding:6px 14px;border-radius:7px;cursor:pointer;font-size:.8rem;font-weight:600;color:#6b7280;white-space:nowrap;transition:all .15s;user-select:none}
+.tab:hover{background:#f3f4f6;color:#374151}
+.tab.active{background:#667eea;color:#fff}
+.tc{display:none}.tc.active{display:block}
+
+/* ── KPI Cards ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:#fff;border-radius:10px;padding:12px 16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.kpi-l{font-size:.68rem;color:#6b7280;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.kpi-v{font-size:1.4rem;font-weight:700;margin-top:4px;color:#111827;line-height:1.1}
+.kpi-s{font-size:.68rem;color:#9ca3af;margin-top:3px}
+
+/* ── Chart Cards ── */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:16px;margin-bottom:18px}
+.ccard{background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.ccard.wide{grid-column:1/-1}
+.ccard.third{min-width:0}
+.ctitle{font-size:.82rem;font-weight:700;color:#374151;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+/* ── Store Breakdown Grid ── */
+.store-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}
+.store-card{background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.store-card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #f3f4f6}
+.store-dot{width:12px;height:12px;border-radius:50%}
+.store-name{font-weight:700;font-size:.9rem;color:#111827}
+.mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.mini-stat{background:#f9fafb;border-radius:7px;padding:8px 10px}
+.mini-stat-l{font-size:.65rem;color:#9ca3af;font-weight:600}
+.mini-stat-v{font-size:.95rem;font-weight:700;color:#111827;margin-top:2px}
+
+/* ── Tables ── */
+.twrap{background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.07);overflow-x:auto}
+.thead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.sel{padding:4px 8px;border:1px solid #e5e7eb;border-radius:7px;font-size:.78rem;background:#fff;color:#374151}
+.srch{padding:4px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:.78rem;width:160px}
+table{width:100%;border-collapse:collapse;font-size:.76rem}
+th{text-align:left;padding:7px 9px;background:#f9fafb;font-weight:700;color:#4b5563;border-bottom:2px solid #e5e7eb;white-space:nowrap}
+td{padding:6px 9px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tr:hover td{background:#fafafa}
+.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:.65rem;font-weight:700}
+.b-sm{background:#ede9fe;color:#7c3aed}
+.b-ib{background:#e0f2fe;color:#0369a1}
+.b-yk{background:#fff7ed;color:#c2410c}
+.b-gt{background:#dbeafe;color:#1d4ed8}
+.b-eb{background:#dcfce7;color:#166534}
+.b-mk{background:#fef3c7;color:#92400e}
+.b-ok{background:#dcfce7;color:#166534}
+.b-ng{background:#fee2e2;color:#991b1b}
+
+/* ── Issue Cards ── */
+.issue-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:20px}
+.issue-card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.07);border-left:4px solid #ef4444;transition:box-shadow .15s}
+.issue-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.issue-card.warn{border-left-color:#f59e0b}
+.issue-card.info{border-left-color:#3b82f6}
+.issue-card.ok{border-left-color:#10b981}
+.issue-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.issue-ico{font-size:1.5rem;flex-shrink:0;margin-top:1px}
+.issue-htxt{flex:1}
+.issue-title{font-weight:700;font-size:.9rem;color:#111827;margin-bottom:2px}
+.issue-metric{font-size:.73rem;font-weight:600}
+.issue-metric.red{color:#dc2626}
+.issue-metric.yellow{color:#d97706}
+.issue-metric.blue{color:#2563eb}
+.issue-metric.green{color:#059669}
+.issue-body{font-size:.79rem;color:#4b5563;line-height:1.65;margin-bottom:12px}
+.issue-action{background:#f5f3ff;border-radius:8px;padding:10px 13px;font-size:.78rem;color:#374151;border-left:3px solid #667eea;line-height:1.6}
+.issue-action strong{color:#667eea;font-weight:700}
+.issue-section-title{font-size:.8rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin:20px 0 12px;padding-bottom:6px;border-bottom:2px solid #f3f4f6}
+
+/* ── Fee breakdown inline ── */
+.fee-breakdown{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.fee-pill{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px}
+.fp-sm{background:#ede9fe;color:#7c3aed}
+.fp-ib{background:#e0f2fe;color:#0369a1}
+.fp-yk{background:#fff7ed;color:#c2410c}
+
+/* ── Regulars Table ── */
+.rtbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.rtbl th{padding:8px 12px;background:#f9fafb;font-weight:700;color:#4b5563;text-align:left;border-bottom:2px solid #e5e7eb}
+.rtbl td{padding:8px 12px;border-bottom:1px solid #f3f4f6}
+.rank-dot{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-weight:700;font-size:.76rem}
+.r1{background:#fbbf24;color:#78350f}.r2{background:#9ca3af;color:#fff}.r3{background:#b45309;color:#fff}.rn{background:#f3f4f6;color:#6b7280}
+
+/* ── Info Box ── */
+.ibox{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:9px 13px;font-size:.76rem;color:#1d4ed8;margin-bottom:14px;line-height:1.5}
+.wbox{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:9px 13px;font-size:.76rem;color:#c2410c;margin-bottom:14px}
+.empty{text-align:center;padding:60px 20px;color:#9ca3af}
+.empty-ico{font-size:3rem;margin-bottom:12px}
+
+/* ── Section label ── */
+.sec-label{font-size:.8rem;font-weight:700;color:#374151;margin-bottom:10px;padding:6px 0;border-bottom:2px solid #f3f4f6;display:flex;align-items:center;gap:6px}
+
+@media(max-width:700px){.up-grid,.store-grid,.cgrid{grid-template-columns:1fr}.gfilter{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="hdr">
+  <div>
+    <h1>🏪 hump レンタルサロン 売上分析ダッシュボード</h1>
+    <p>スペースマーケット・インスタベース・よやクル — 複数月・複数ファイル対応</p>
+  </div>
+</div>
+
+<!-- Upload -->
+<div class="up-sec">
+  <h2>📂 CSVファイルを追加（各プラットフォーム複数ファイル可）</h2>
+  <div class="up-grid">
+    <!-- SpaceMarket -->
+    <div class="up-card" id="up-sm">
+      <div class="up-top">
+        <div class="up-ico">📊</div>
+        <div class="up-info">
+          <div class="up-title">スペースマーケット<span class="file-count" id="fc-sm" style="display:none">0</span></div>
+          <div class="up-sub">売上明細_YYYY_M.csv（複数月可）</div>
+        </div>
+      </div>
+      <div class="up-status" id="st-sm">未読み込み</div>
+      <div class="up-btns">
+        <button class="btn-add" onclick="document.getElementById('fi-sm').click()">＋ ファイルを追加</button>
+        <button class="btn-clear" id="cl-sm" style="display:none" onclick="clearPlat('sm','スペースマーケット')">クリア</button>
+      </div>
+      <input type="file" id="fi-sm" accept=".csv" multiple style="display:none" onchange="onFiles(this,'sm')">
+    </div>
+    <!-- Instabase -->
+    <div class="up-card" id="up-ib">
+      <div class="up-top">
+        <div class="up-ico">📋</div>
+        <div class="up-info">
+          <div class="up-title">インスタベース<span class="file-count" id="fc-ib" style="display:none">0</span></div>
+          <div class="up-sub">instabase-bookings.csv（複数月可）</div>
+        </div>
+      </div>
+      <div class="up-status" id="st-ib">未読み込み</div>
+      <div class="up-btns">
+        <button class="btn-add" onclick="document.getElementById('fi-ib').click()">＋ ファイルを追加</button>
+        <button class="btn-clear" id="cl-ib" style="display:none" onclick="clearPlat('ib','インスタベース')">クリア</button>
+      </div>
+      <input type="file" id="fi-ib" accept=".csv" multiple style="display:none" onchange="onFiles(this,'ib')">
+    </div>
+    <!-- Yoyakuru -->
+    <div class="up-card" id="up-yk">
+      <div class="up-top">
+        <div class="up-ico">📅</div>
+        <div class="up-info">
+          <div class="up-title">よやクル<span class="file-count" id="fc-yk" style="display:none">0</span></div>
+          <div class="up-sub">【よやクルPro売り上げ】…csv（複数月可）</div>
+        </div>
+      </div>
+      <div class="up-status" id="st-yk">未読み込み</div>
+      <div class="up-btns">
+        <button class="btn-add" onclick="document.getElementById('fi-yk').click()">＋ ファイルを追加</button>
+        <button class="btn-clear" id="cl-yk" style="display:none" onclick="clearPlat('yk','よやクル')">クリア</button>
+      </div>
+      <input type="file" id="fi-yk" accept=".csv" multiple style="display:none" onchange="onFiles(this,'yk')">
+    </div>
+  </div>
+</div>
+
+<!-- Empty state -->
+<div id="empty-state" class="main">
+  <div class="empty">
+    <div class="empty-ico">📂</div>
+    <div style="font-size:1rem;font-weight:700;margin-bottom:6px">CSVファイルをアップロードしてください</div>
+    <div style="font-size:.82rem">1つ以上アップロードすると分析が開始されます。各プラットフォームで複数月分を追加できます。</div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard" style="display:none">
+
+  <!-- Global Filter Bar -->
+  <div class="gfilter">
+    <div class="gf-group">
+      <span class="gf-label">期間</span>
+      <div class="toggle-btns">
+        <button class="tbtn active" onclick="setPeriod('all',this)">全期間</button>
+        <button class="tbtn" onclick="setPeriod('monthly',this)">月次</button>
+      </div>
+      <div class="month-pills" id="month-pills" style="display:none"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="gf-group">
+      <span class="gf-label">店舗</span>
+      <div class="toggle-btns">
+        <button class="tbtn active" onclick="setStore('all',this)">全店舗</button>
+        <button class="tbtn" onclick="setStore('五反田',this)">五反田</button>
+        <button class="tbtn" onclick="setStore('恵比寿',this)">恵比寿</button>
+        <button class="tbtn" onclick="setStore('武蔵小杉',this)">武蔵小杉</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="overview" onclick="switchTab(this)">📈 概要</div>
+      <div class="tab" data-tab="revenue" onclick="switchTab(this)">💴 売上分析</div>
+      <div class="tab" data-tab="customers" onclick="switchTab(this)">👥 顧客分析</div>
+      <div class="tab" data-tab="usage" onclick="switchTab(this)">⏰ 利用パターン</div>
+      <div class="tab" data-tab="platform" onclick="switchTab(this)">🏢 プラットフォーム比較</div>
+      <div class="tab" data-tab="data" onclick="switchTab(this)">📋 詳細データ</div>
+      <div class="tab" data-tab="issues" onclick="switchTab(this)">⚠️ 課題・改善案</div>
+    </div>
+
+    <!-- ====== 概要 ====== -->
+    <div class="tc active" id="tab-overview">
+      <div class="kpi-grid" id="kpi-main"></div>
+      <div class="cgrid">
+        <div class="ccard wide">
+          <div class="ctitle">📅 月次売上推移（全データ・店舗別積み上げ）</div>
+          <div style="height:240px"><canvas id="c-monthly-trend"></canvas></div>
+        </div>
+        <div class="ccard wide">
+          <div class="ctitle">📈 日次売上推移（選択期間）</div>
+          <div style="height:220px"><canvas id="c-daily"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">🏪 店舗別売上・件数</div>
+          <div style="height:220px"><canvas id="c-store-rev"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">🔵 プラットフォーム別売上</div>
+          <div style="height:220px"><canvas id="c-plat-rev"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 売上分析 ====== -->
+    <div class="tc" id="tab-revenue">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;background:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.07)">
+        <span style="font-size:.75rem;font-weight:700;color:#6b7280;white-space:nowrap">表示金額：</span>
+        <div class="toggle-btns" id="rev-metric-toggle">
+          <button class="tbtn active" onclick="setRevMetric('gross',this)">📈 売上額（税込）</button>
+          <button class="tbtn" onclick="setRevMetric('payout',this)">💰 実質手取り（手数料後）</button>
+        </div>
+        <span style="font-size:.71rem;color:#9ca3af" id="rev-metric-note">手数料控除前の売上金額を表示中</span>
+      </div>
+      <div class="sec-label">🏪 店舗別内訳</div>
+      <div class="store-grid" id="store-breakdown-grid">
+        <!-- dynamically filled -->
+      </div>
+      <div class="sec-label">📊 売上詳細チャート</div>
+      <div class="cgrid">
+        <div class="ccard wide">
+          <div class="ctitle" id="weekly-chart-title">📊 週次売上推移（店舗別積み上げ）</div>
+          <div style="height:240px"><canvas id="c-weekly"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">💳 決済方法別売上</div>
+          <div style="height:230px"><canvas id="c-payment"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">🎯 利用目的別件数</div>
+          <div style="height:230px"><canvas id="c-purpose"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">📦 予約金額帯の分布</div>
+          <div style="height:230px"><canvas id="c-revdist"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">❌ キャンセル率（プラットフォーム別）</div>
+          <div style="height:230px"><canvas id="c-cancel"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 顧客分析 ====== -->
+    <div class="tc" id="tab-customers">
+      <div class="ibox">💡 「リピーター」= このデータ期間内に2回以上予約した顧客。「新規」= 1回のみ。期間・店舗フィルターが適用されます。キャンセルはSM=スペースマーケット、IB=インスタベース、YK=よやクルで色分け表示。</div>
+      <div class="cgrid">
+        <div class="ccard">
+          <div class="ctitle">👤 新規 vs リピーター（店舗別）</div>
+          <div style="height:250px"><canvas id="c-newrep"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">📊 顧客別予約回数の分布</div>
+          <div style="height:250px"><canvas id="c-bookdist"></canvas></div>
+        </div>
+        <div class="ccard wide">
+          <div class="ctitle">📈 月次 新規 vs リピーター推移</div>
+          <div style="height:220px"><canvas id="c-monthly-newrep"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">❌ 顧客別キャンセル回数 TOP15（PF内訳）</div>
+          <div style="height:300px"><canvas id="c-cust-cancel"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">📉 PF別 キャンセル件数・率の比較</div>
+          <div style="height:300px"><canvas id="c-cancel-plat"></canvas></div>
+        </div>
+      </div>
+      <div class="twrap">
+        <div class="ctitle" style="margin-bottom:10px">🏆 顧客別 予約・キャンセル実績 TOP20</div>
+        <div id="reg-tbl"></div>
+      </div>
+    </div>
+
+    <!-- ====== 利用パターン ====== -->
+    <div class="tc" id="tab-usage">
+      <div class="ibox">📊 各グラフはプラットフォーム別（スペースマーケット・インスタベース・よやクル）の内訳が積み上げ表示されます。</div>
+      <div class="cgrid">
+        <div class="ccard">
+          <div class="ctitle">📅 曜日別予約件数（PF内訳）</div>
+          <div style="height:250px"><canvas id="c-weekday"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">🕐 時間帯別利用開始数（PF内訳）</div>
+          <div style="height:250px"><canvas id="c-hourly"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">⏱ 利用時間の分布（PF内訳）</div>
+          <div style="height:250px"><canvas id="c-dur"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">🏪 店舗別 平均利用時間（PF別）</div>
+          <div style="height:250px"><canvas id="c-avgdur"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== プラットフォーム比較 ====== -->
+    <div class="tc" id="tab-platform">
+      <div class="wbox" id="fincode-note">⚠ よやクルはfincodeの決済手数料（3.5%）を差し引いた実質手取りを表示しています。</div>
+      <div class="kpi-grid" id="kpi-plat"></div>
+      <div class="cgrid">
+        <div class="ccard">
+          <div class="ctitle">⚡ プラットフォーム別 売上・件数</div>
+          <div style="height:240px"><canvas id="c-platcmp"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">🗂 店舗×プラットフォーム 売上</div>
+          <div style="height:240px"><canvas id="c-stplat"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">💸 実効手数料率（よやクルはfincode込み）</div>
+          <div style="height:240px"><canvas id="c-comm"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">📈 プラットフォーム別 平均単価</div>
+          <div style="height:240px"><canvas id="c-platavg"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">💴 支払手数料金額（PF別）</div>
+          <div style="height:240px"><canvas id="c-comm-amount"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">📊 売上・手数料・手取り 比較</div>
+          <div style="height:240px"><canvas id="c-gross-fee-payout"></canvas></div>
+        </div>
+      </div>
+      <div class="twrap" id="fee-detail-tbl-wrap">
+        <div class="ctitle" style="margin-bottom:10px">🧾 PF別 手数料詳細</div>
+        <div id="fee-detail-tbl"></div>
+      </div>
+    </div>
+
+    <!-- ====== 課題・改善案 ====== -->
+    <div class="tc" id="tab-issues">
+      <div id="issues-content">
+        <!-- dynamically filled by drawIssues() -->
+      </div>
+    </div>
+
+    <!-- ====== 詳細データ ====== -->
+    <div class="tc" id="tab-data">
+      <div class="twrap">
+        <div class="thead">
+          <div style="font-size:.85rem;font-weight:700;color:#374151">全予約データ一覧</div>
+          <div class="filters">
+            <select class="sel" id="df-plat" onchange="renderTable()">
+              <option value="">全PF</option>
+              <option value="スペースマーケット">スペースマーケット</option>
+              <option value="インスタベース">インスタベース</option>
+              <option value="よやクル">よやクル</option>
+            </select>
+            <select class="sel" id="df-status" onchange="renderTable()">
+              <option value="">全ステータス</option>
+              <option value="completed">確定</option>
+              <option value="cancelled">キャンセル</option>
+            </select>
+            <input type="text" class="srch" id="df-q" placeholder="顧客名で検索..." oninput="renderTable()">
+          </div>
+        </div>
+        <div id="tbl-body"></div>
+      </div>
+    </div>
+  </div><!-- /main -->
+</div><!-- /dashboard -->
+
+<script>
+// ============================================================
+//  CONSTANTS & STATE
+// ============================================================
+const FINCODE_RATE = 0.035; // よやクル決済手数料（fincode）
+
+const STORES = ['五反田','恵比寿','武蔵小杉'];
+const PLATFORMS = ['スペースマーケット','インスタベース','よやクル'];
+const SC = {'五反田':'#3b82f6','恵比寿':'#10b981','武蔵小杉':'#f59e0b'};
+const PC = {'スペースマーケット':'#8b5cf6','インスタベース':'#06b6d4','よやクル':'#f97316'};
+const STORE_ID = {'五反田':'gt','恵比寿':'eb','武蔵小杉':'mk'};
+const PLAT_SHORT = {'スペースマーケット':'SM','インスタベース':'IB','よやクル':'YK'};
+
+let ALL = [];           // all bookings
+let SEEN = new Set();   // dedup by composite key
+let FILE_CNT = {sm:0,ib:0,yk:0};
+let REC_CNT  = {sm:0,ib:0,yk:0};
+let CHARTS = {};
+let FILTER = {store:'all', month:null}; // month: 'YYYY-MM' or null
+let REV_METRIC = 'gross'; // 'gross'=売上額  'payout'=実質手取り（手数料後）
+
+// ============================================================
+//  UTILITY
+// ============================================================
+function $m(n){ return parseInt(String(n).replace(/[^\d]/g,''))||0; }
+function $mabs(n){ const v=String(n||'').replace(/[^\d]/g,''); return parseInt(v)||0; }
+function normStore(n){
+  if(!n) return '不明';
+  if(n.includes('五反田')) return '五反田';
+  if(n.includes('恵比寿')) return '恵比寿';
+  if(n.includes('武蔵小杉')) return '武蔵小杉';
+  return n;
+}
+function parseDate(s){
+  if(!s) return null;
+  s=s.trim();
+  const m=s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  return m?new Date(+m[1],+m[2]-1,+m[3]):null;
+}
+function parseYKDate(s, year){
+  if(!s) return null;
+  const m=s.match(/^(\d{2})\/(\d{2})/);
+  if(!m) return null;
+  const mo=+m[1],da=+m[2];
+  // year は 決済日時（データ入力用）から渡す。未提供時のみ月で推測（フォールバック）
+  const yr = year || (mo<=6?2026:2025);
+  return new Date(yr,mo-1,da);
+}
+function parseYKHour(s){
+  if(!s) return null;
+  const m=s.match(/(\d{1,2}):(\d{2})〜/);
+  return m?+m[1]:null;
+}
+function parseYKDur(s){
+  if(!s) return null;
+  const m=s.match(/(\d{1,2}):(\d{2})〜(\d{1,2}):(\d{2})/);
+  if(!m) return null;
+  let d=(+m[3]*60+ +m[4]- +m[1]*60- +m[2])/60;
+  if(d<0) d+=24;
+  return Math.round(d*10)/10;
+}
+function planDur(p){
+  if(!p) return null;
+  const m1=p.match(/^(\d+)時間/); if(m1) return +m1[1];
+  const m2=p.match(/(\d+)[〜~](\d+)時間/); if(m2) return (+m2[1]+ +m2[2])/2;
+  if(p.includes('基本プラン')) return 1;
+  return null;
+}
+function fc(n){ return '¥'+Math.round(n||0).toLocaleString(); }
+function fd(d){ return d?`${d.getMonth()+1}/${d.getDate()}`:'-'; }
+function ym(d){ return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`:''; }
+function ymLabel(s){ const p=s.split('-'); return p[0]+'年'+parseInt(p[1])+'月'; }
+
+// ============================================================
+//  PARSERS
+// ============================================================
+function parseSpacemarket(rows){
+  const out=[];
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];
+    if(!r||!r[0]||String(r[0]).trim()==='') continue;
+    const gross=$m(r[5]), payout=$m(r[6]);
+    if(gross===0 && payout===0 && !(r[5]||r[6])) continue; // 完全空行スキップ
+    const key='SM_'+String(r[0]).trim();
+    if(SEEN.has(key)) continue; SEEN.add(key);
+    out.push({
+      id:key, platform:'スペースマーケット',
+      store:normStore(r[9]),
+      customer:(r[12]||'').trim(),
+      bookDate:parseDate(r[2]||r[1]),
+      useDate:parseDate(r[3]),
+      duration:planDur(r[11]),
+      startHour:null,
+      gross, payout,
+      payment:r[8]||'',
+      purpose:r[13]||'',
+      status:payout===0?'cancelled':'completed',
+      plan:r[11]||'',
+      fincodeFee:0,
+    });
+  }
+  return out;
+}
+
+function parseInstabase(rows){
+  const out=[];
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];
+    if(!r||!r[0]||String(r[0]).trim()==='') continue;
+    // インスタベースは列数が可変のことがあるため安全にアクセス
+    const safeR=(idx)=>r[idx]!=null?String(r[idx]).trim():'';
+    const gross=$m(safeR(16)), payout=$m(safeR(17));
+    const key='IB_'+safeR(0);
+    if(SEEN.has(key)) continue; SEEN.add(key);
+    const startStr=safeR(13);
+    let startHour=null;
+    if(startStr.includes(' ')){ const t=startStr.split(' ')[1]; if(t) startHour=+t.split(':')[0]; }
+    // 利用時間: 数値があればそれ、なければ開始〜終了から計算
+    let duration=parseFloat(safeR(15))||null;
+    if(!duration){
+      const endStr=safeR(14);
+      if(startStr&&endStr){
+        const s=parseDate(startStr),e=parseDate(endStr);
+        if(s&&e) duration=Math.round((e-s)/36e5*10)/10||null;
+      }
+    }
+    out.push({
+      id:key, platform:'インスタベース',
+      store:normStore(safeR(1)),
+      customer:safeR(8),
+      bookDate:parseDate(safeR(12)),
+      useDate:parseDate(startStr),
+      duration,
+      startHour,
+      gross, payout,
+      payment:safeR(4),
+      purpose:safeR(9),
+      status:safeR(3).includes('確定')?'completed':'cancelled',
+      plan:'',
+      fincodeFee:0,
+    });
+  }
+  return out;
+}
+
+function parseYoyakuru(rows){
+  const out=[];
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];
+    if(!r||!r[0]||String(r[0]).trim()==='') continue;
+    const safeR=(idx)=>r[idx]!=null?String(r[idx]).trim():'';
+
+    // スペース名が無い行（フッターや集計行）をスキップ
+    const spaceName=safeR(0);
+    if(!spaceName||spaceName==='合計'||spaceName==='小計'||spaceName==='total') continue;
+
+    const gross=$m(safeR(3));
+    const rawProfit=$mabs(safeR(6));
+    const state=safeR(9);
+    const isCancelled=state.includes('キャンセル');
+
+    // キャンセル行は gross があれば記録（返金額確認のため）
+    // 完全に空（gross=0 かつ profit=0 かつ状態も空）な行のみスキップ
+    if(gross===0 && rawProfit===0 && !state) continue;
+
+    // よやクルのキャンセル行は決済IDが同じ確定行と重複することがある
+    // → 決済ID + 状態 でキーを作成して重複排除
+    const rawId=safeR(14);
+    const key='YK_'+rawId+'_'+state.slice(0,4);
+    if(SEEN.has(key)) continue; SEEN.add(key);
+
+    const usageStr=safeR(12);
+    const fincodeFee=isCancelled?0:Math.round(gross*FINCODE_RATE);
+    const payout=isCancelled?0:Math.max(0, rawProfit-fincodeFee);
+
+    // 決済日時（データ入力用）列(index 11)は "YYYY-MM-DD HH:MM:SS" 形式で正確な年を持つ
+    // → 利用日時の年推測に使用（MM/DD 形式の年跨ぎ問題を解消）
+    const payDateStr=safeR(11);
+    const yrMatch=payDateStr.match(/^(\d{4})/);
+    const bookYear=yrMatch?+yrMatch[1]:null;
+    const bookDateObj=parseDate(payDateStr);
+
+    // 年跨ぎ補正: まず決済年で利用日を作成し、利用日 < 決済日なら翌年に繰り上げ
+    // 例: 2025-11-30に決済 → 利用日 03/30 → 2025-03-30 < 2025-11-30 → 2026-03-30 が正しい
+    let useDate=parseYKDate(usageStr,bookYear);
+    if(useDate && bookDateObj && useDate < bookDateObj){
+      useDate=new Date(useDate.getFullYear()+1, useDate.getMonth(), useDate.getDate());
+    }
+
+    out.push({
+      id:key, platform:'よやクル',
+      store:normStore(spaceName),
+      customer:safeR(1),
+      bookDate:bookDateObj,
+      useDate,
+      duration:parseYKDur(usageStr),
+      startHour:parseYKHour(usageStr),
+      gross:isCancelled?0:gross,
+      payout,
+      rawProfit:isCancelled?0:rawProfit,
+      fincodeFee,
+      payment:safeR(8),
+      purpose:'',
+      status:isCancelled?'cancelled':'completed',
+      plan:'',
+      coupon:safeR(7),
+    });
+  }
+  return out;
+}
+
+// ============================================================
+//  FILE LOADING
+// ============================================================
+function detectFmt(headers){
+  const h=headers.join(',');
+  if(h.includes('予約リクエスト日')) return 'sm';
+  if(h.includes('申込日時')||h.includes('利用開始日時')) return 'ib';
+  if(h.includes('決済元金')||(h.includes('HN')&&h.includes('利益'))) return 'yk';
+  return null;
+}
+const HINT_PLAT={sm:'スペースマーケット',ib:'インスタベース',yk:'よやクル'};
+
+function onFiles(input, hint){
+  const files=Array.from(input.files);
+  if(!files.length) return;
+  let pending=files.length;
+
+  files.forEach(file=>{
+    // まずUTF-8で試みる。失敗（文字化け）したらShift_JISでリトライ
+    parseFileWithEncoding(file, 'UTF-8', hint, (res, enc)=>{
+      // 文字化け判定: ヘッダー行に「?」が多い or 日本語ゼロならShift_JISでリトライ
+      const header=(res.data[0]||[]).join('');
+      const hasJP=/[\u3000-\u9fff\uff00-\uffef]/.test(header);
+      const hasMojibake=(header.match(/\?/g)||[]).length>3;
+      if(!hasJP || hasMojibake){
+        parseFileWithEncoding(file, 'Shift_JIS', hint, (res2)=>{
+          processParseResult(res2, hint, file.name);
+          if(--pending===0){ input.value=''; rebuild(); }
+        });
+      } else {
+        processParseResult(res, hint, file.name);
+        if(--pending===0){ input.value=''; rebuild(); }
+      }
+    });
+  });
+}
+
+function parseFileWithEncoding(file, encoding, hint, callback){
+  // FileReaderで指定エンコードとして読み込んでからPapaParseにテキストとして渡す
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const text = e.target.result;
+    const res = Papa.parse(text, {
+      skipEmptyLines: 'greedy',   // 空白行・空白セルのみの行をすべてスキップ
+      trimHeaders: true,
+      dynamicTyping: false,       // 数値自動変換OFF（¥記号付き文字列を保持）
+      quoteChar: '"',
+      delimiter: ',',
+    });
+    callback(res, encoding);
+  };
+  reader.onerror = ()=>{
+    updateUploadUI(hint, '読み込みエラー: '+file.name);
+    callback({data:[]}, encoding);
+  };
+  // TextDecoderを使って指定エンコードで読む
+  file.arrayBuffer().then(buf=>{
+    try{
+      const decoder = new TextDecoder(encoding, {fatal:false});
+      const text = decoder.decode(buf);
+      // BOM除去
+      const cleaned = text.replace(/^\uFEFF/,'');
+      const res = Papa.parse(cleaned, {
+        skipEmptyLines: 'greedy',
+        dynamicTyping: false,
+        quoteChar: '"',
+        delimiter: ',',
+      });
+      callback(res, encoding);
+    }catch(e){
+      callback({data:[]}, encoding);
+    }
+  }).catch(()=>{
+    // arrayBuffer非対応の場合はFileReaderにフォールバック
+    const reader2 = new FileReader();
+    reader2.onload = ev=>{
+      const res = Papa.parse(ev.target.result, {
+        skipEmptyLines:'greedy',dynamicTyping:false,quoteChar:'"',delimiter:',',
+      });
+      callback(res, encoding);
+    };
+    reader2.readAsText(file, encoding);
+  });
+}
+
+function processParseResult(res, hint, fileName){
+  try{
+    const rows = res.data;
+    if(!rows || rows.length < 2){
+      updateUploadUI(hint, `データが空です: ${fileName}`);
+      return;
+    }
+    // ヘッダー行を探す（先頭数行にBOMや空行が混入している場合に備えて）
+    let headerIdx = 0;
+    for(let i=0;i<Math.min(5,rows.length);i++){
+      const row=rows[i];
+      if(row && row.some(c=>c&&String(c).trim().length>0)){
+        headerIdx=i; break;
+      }
+    }
+    const dataRows = rows.slice(headerIdx); // headerIdx行目がヘッダー、それ以降がデータ
+
+    const fmt = detectFmt(dataRows[0]||[]) || hint;
+    let parsed=[];
+    if(fmt==='sm') parsed=parseSpacemarket(dataRows);
+    else if(fmt==='ib') parsed=parseInstabase(dataRows);
+    else if(fmt==='yk') parsed=parseYoyakuru(dataRows);
+    else {
+      updateUploadUI(hint, `フォーマット不明: ${fileName}`);
+      return;
+    }
+    ALL=ALL.concat(parsed);
+    FILE_CNT[fmt]=(FILE_CNT[fmt]||0)+1;
+    REC_CNT[fmt]=(REC_CNT[fmt]||0)+parsed.length;
+    updateUploadUI(fmt, null);
+    console.log(`[${fmt}] ${fileName}: ${dataRows.length-1}行 → ${parsed.length}件 パース完了`);
+  }catch(e){
+    console.error(e);
+    updateUploadUI(hint, e.message+' ('+fileName+')');
+  }
+}
+
+function updateUploadUI(fmt, err){
+  const card=document.getElementById('up-'+fmt);
+  const st=document.getElementById('st-'+fmt);
+  const fcEl=document.getElementById('fc-'+fmt);
+  const cl=document.getElementById('cl-'+fmt);
+  if(err){
+    card.className='up-card errored';
+    st.textContent='⚠ '+err;
+    return;
+  }
+  const n=FILE_CNT[fmt]||0;
+  const r=REC_CNT[fmt]||0;
+  if(n>0){
+    card.className='up-card loaded';
+    st.textContent=`✓ ${r.toLocaleString()}件 読み込み済み`;
+    fcEl.textContent=n+'ファイル'; fcEl.style.display='';
+    cl.style.display='';
+  }
+}
+
+function clearPlat(hint, platName){
+  ALL=ALL.filter(b=>b.platform!==platName);
+  // reset seen IDs for this platform
+  const prefix={'スペースマーケット':'SM_','インスタベース':'IB_','よやクル':'YK_'}[platName];
+  if(prefix){ for(const k of [...SEEN]){ if(k.startsWith(prefix)) SEEN.delete(k); } }
+  FILE_CNT[hint]=0; REC_CNT[hint]=0;
+  document.getElementById('up-'+hint).className='up-card';
+  document.getElementById('st-'+hint).textContent='未読み込み';
+  document.getElementById('fc-'+hint).style.display='none';
+  document.getElementById('cl-'+hint).style.display='none';
+  rebuild();
+}
+
+// ============================================================
+//  FILTER HELPERS
+// ============================================================
+function getFiltered(status='completed'){
+  return ALL.filter(b=>{
+    if(status!=='any'&&b.status!==status) return false;
+    if(FILTER.store!=='all'&&b.store!==FILTER.store) return false;
+    if(FILTER.month){
+      if(!b.useDate) return false;
+      if(ym(b.useDate)!==FILTER.month) return false;
+    }
+    return true;
+  });
+}
+// For monthly comparison chart - only store filter
+function getStoreFiltered(status='completed'){
+  return ALL.filter(b=>{
+    if(status!=='any'&&b.status!==status) return false;
+    if(FILTER.store!=='all'&&b.store!==FILTER.store) return false;
+    return true;
+  });
+}
+function getMonths(){
+  const s=new Set();
+  ALL.forEach(b=>{ if(b.useDate) s.add(ym(b.useDate)); });
+  return [...s].sort();
+}
+
+// ============================================================
+//  GLOBAL FILTER CONTROLS
+// ============================================================
+function setPeriod(p, btn){
+  document.querySelectorAll('.gfilter .tbtn').forEach(b=>{
+    if(b.textContent==='全期間'||b.textContent==='月次') b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  const pills=document.getElementById('month-pills');
+  if(p==='all'){
+    FILTER.month=null;
+    pills.style.display='none';
+  } else {
+    pills.style.display='flex';
+    renderMonthPills();
+    // auto-select latest month
+    const months=getMonths();
+    if(months.length&&!FILTER.month){ FILTER.month=months[months.length-1]; }
+    renderMonthPills();
+  }
+  rebuild();
+}
+
+function setStore(s, btn){
+  document.querySelectorAll('.gfilter .gf-group:last-child .tbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  FILTER.store=s;
+  rebuild();
+}
+
+function setMonth(m){
+  FILTER.month=m;
+  renderMonthPills();
+  rebuild();
+}
+
+function setRevMetric(m, btn){
+  REV_METRIC = m;
+  document.querySelectorAll('#rev-metric-toggle .tbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const noteEl=document.getElementById('rev-metric-note');
+  if(noteEl) noteEl.textContent = m==='gross'?'手数料控除前の売上金額を表示中':'各種手数料を差し引いた実質手取りを表示中';
+  // 売上分析タブのチャートだけ再描画
+  const done=getFiltered('completed');
+  drawWeekly(done);
+  drawStoreBreakdown(done);
+}
+
+function renderMonthPills(){
+  const months=getMonths();
+  const container=document.getElementById('month-pills');
+  container.innerHTML=months.map(m=>`
+    <button class="mpill${FILTER.month===m?' active':''}" onclick="setMonth('${m}')">${ymLabel(m)}</button>
+  `).join('');
+}
+
+// ============================================================
+//  CHART HELPER
+// ============================================================
+function mkChart(id,cfg){
+  if(CHARTS[id]) CHARTS[id].destroy();
+  const el=document.getElementById(id); if(!el) return;
+  CHARTS[id]=new Chart(el.getContext('2d'),cfg);
+}
+
+// ============================================================
+//  REBUILD
+// ============================================================
+function rebuild(){
+  if(ALL.length===0){
+    document.getElementById('dashboard').style.display='none';
+    document.getElementById('empty-state').style.display='block';
+    return;
+  }
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('empty-state').style.display='none';
+  if(FILTER.month){ renderMonthPills(); }
+
+  const done=getFiltered('completed');
+  const allF=getFiltered('any');
+  const doneStore=getStoreFiltered('completed'); // for monthly trend (no month filter)
+
+  drawKPI(done, allF);
+  drawMonthlyTrend(doneStore);
+  drawDaily(done);
+  drawStoreRev(done);
+  drawPlatRev(done);
+  drawWeekly(done);
+  drawStoreBreakdown(done);
+  drawPayment(done);
+  drawPurpose(done);
+  drawRevDist(done);
+  drawCancel(allF);
+  drawNewRep(done, allF);
+  drawBookDist(done, allF);
+  drawMonthlyNewRep(doneStore);
+  drawRegtable(done, allF);
+  drawCustCancel(allF);
+  drawCancelByPlat(allF);
+  drawWeekday(done);
+  drawHourly(done);
+  drawDur(done);
+  drawAvgDur(done);
+  drawPlatKPI(done, allF);
+  drawPlatCmp(done);
+  drawStorePlat(done);
+  drawComm(done);
+  drawPlatAvg(done);
+  drawCommAmount(done);
+  drawGrossFeePayout(done);
+  drawFeeDetailTable(done);
+  drawIssues(done, allF);
+  renderTable();
+}
+
+// ============================================================
+//  KPI
+// ============================================================
+function drawKPI(done, allF){
+  const tg=done.reduce((s,b)=>s+b.gross,0);
+  const tp=done.reduce((s,b)=>s+b.payout,0);
+  const uq=new Set(done.map(b=>b.customer)).size;
+  const canCnt=allF.filter(b=>b.status==='cancelled').length;
+  const cr=allF.length>0?(canCnt/allF.length*100).toFixed(1):0;
+  const durs=done.filter(b=>b.duration).map(b=>b.duration);
+  const avgDur=durs.length>0?durs.reduce((s,d)=>s+d,0)/durs.length:0;
+  const cm={}; done.forEach(b=>{cm[b.customer]=(cm[b.customer]||0)+1;});
+  const regs=Object.values(cm).filter(c=>c>=2).length;
+  document.getElementById('kpi-main').innerHTML=[
+    ['総売上（税込）',fc(tg),`実質手取り ${fc(tp)}`],
+    ['確定予約件数',done.length+'件',`全体 ${allF.length}件`],
+    ['ユニーク顧客数',uq+'名',`常連(2回+) ${regs}名`],
+    ['キャンセル率',cr+'%',`${canCnt}件キャンセル`],
+    ['平均利用時間',avgDur.toFixed(1)+'h',`${durs.length}件よりデータ`],
+    ['平均予約単価',done.length>0?fc(tg/done.length):'¥0',`手取均 ${done.length>0?fc(tp/done.length):'¥0'}`],
+  ].map(([l,v,s])=>`<div class="kpi"><div class="kpi-l">${l}</div><div class="kpi-v">${v}</div><div class="kpi-s">${s}</div></div>`).join('');
+}
+
+// ============================================================
+//  MONTHLY TREND (always shows all months, store-filtered only)
+// ============================================================
+function drawMonthlyTrend(done){
+  const months=getMonths();
+  if(months.length===0) return;
+  mkChart('c-monthly-trend',{
+    type:'bar',
+    data:{
+      labels:months.map(ymLabel),
+      datasets:STORES.map(s=>({
+        label:s,
+        data:months.map(m=>done.filter(b=>b.store===s&&b.useDate&&ym(b.useDate)===m).reduce((sum,b)=>sum+b.gross,0)),
+        backgroundColor:SC[s],borderRadius:4,
+      }))
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>'¥'+v.toLocaleString()}}}}
+  });
+}
+
+// ============================================================
+//  OVERVIEW CHARTS
+// ============================================================
+function drawDaily(done){
+  const mp={};
+  done.forEach(b=>{ if(!b.useDate) return; const k=b.useDate.toISOString().slice(0,10); mp[k]=(mp[k]||0)+b.gross; });
+  const keys=Object.keys(mp).sort();
+  mkChart('c-daily',{
+    type:'line',
+    data:{
+      labels:keys.map(k=>{ const d=new Date(k); return `${d.getMonth()+1}/${d.getDate()}`; }),
+      datasets:[{label:'日次売上',data:keys.map(k=>mp[k]),borderColor:'#667eea',backgroundColor:'rgba(102,126,234,.1)',fill:true,tension:.35,pointRadius:3}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{callback:v=>'¥'+v.toLocaleString()}}}}
+  });
+}
+
+function drawStoreRev(done){
+  const revs=STORES.map(s=>done.filter(b=>b.store===s).reduce((s,b)=>s+b.gross,0));
+  const cnts=STORES.map(s=>done.filter(b=>b.store===s).length);
+  mkChart('c-store-rev',{
+    type:'bar',
+    data:{
+      labels:STORES,
+      datasets:[
+        {label:'売上',data:revs,backgroundColor:STORES.map(s=>SC[s]),borderRadius:6,yAxisID:'y'},
+        {label:'件数',type:'line',data:cnts,borderColor:'#374151',pointRadius:5,yAxisID:'y2'},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{y:{ticks:{callback:v=>'¥'+v.toLocaleString()}},y2:{position:'right',grid:{display:false},title:{display:true,text:'件数'}}}}
+  });
+}
+
+function drawPlatRev(done){
+  const active=PLATFORMS.filter(p=>done.some(b=>b.platform===p));
+  if(!active.length) return;
+  const revs=active.map(p=>done.filter(b=>b.platform===p).reduce((s,b)=>s+b.gross,0));
+  mkChart('c-plat-rev',{
+    type:'doughnut',
+    data:{labels:active,datasets:[{data:revs,backgroundColor:active.map(p=>PC[p]),borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}},tooltip:{callbacks:{label:c=>` ${c.label}: ${fc(c.raw)}`}}}}
+  });
+}
+
+// ============================================================
+//  STORE BREAKDOWN (Revenue tab)
+// ============================================================
+function drawStoreBreakdown(done){
+  const container=document.getElementById('store-breakdown-grid');
+  if(!container) return;
+  const metric=REV_METRIC||'gross';
+  const isGross=metric==='gross';
+  const activeStores=STORES.filter(s=>done.some(b=>b.store===s));
+  container.innerHTML=activeStores.map(s=>{
+    const sb=done.filter(b=>b.store===s);
+    const tg=sb.reduce((sum,b)=>sum+b.gross,0);
+    const tp=sb.reduce((sum,b)=>sum+b.payout,0);
+    const primary=isGross?tg:tp;          // 主表示金額
+    const secondary=isGross?tp:tg;        // サブ表示金額
+    const cnt=sb.length;
+    const avg=cnt>0?primary/cnt:0;
+    const subLabel=isGross?'実質手取り':'売上額（税込）';
+    const id_=STORE_ID[s];
+    const feeRate=tg>0?((1-tp/tg)*100).toFixed(1)+'%':'--';
+    return `<div class="store-card">
+      <div class="store-card-header">
+        <div class="store-dot" style="background:${SC[s]}"></div>
+        <div class="store-name">${s}</div>
+        <div style="margin-left:auto;font-weight:700;font-size:1rem;color:${SC[s]}">${fc(primary)}</div>
+      </div>
+      <div class="mini-stats">
+        <div class="mini-stat"><div class="mini-stat-l">件数</div><div class="mini-stat-v">${cnt}件</div></div>
+        <div class="mini-stat"><div class="mini-stat-l">平均単価</div><div class="mini-stat-v">${fc(avg)}</div></div>
+        <div class="mini-stat"><div class="mini-stat-l">${subLabel}</div><div class="mini-stat-v">${fc(secondary)}</div></div>
+        <div class="mini-stat"><div class="mini-stat-l">手数料率</div><div class="mini-stat-v">${feeRate}</div></div>
+      </div>
+      <div class="ctitle" style="font-size:.75rem;margin-bottom:6px">プラットフォーム別${isGross?'売上':'手取り'}内訳</div>
+      <div style="height:160px"><canvas id="c-sb-${id_}"></canvas></div>
+    </div>`;
+  }).join('');
+  // draw donut charts after DOM update
+  requestAnimationFrame(()=>{
+    activeStores.forEach(s=>{
+      const id_=STORE_ID[s];
+      const sb=done.filter(b=>b.store===s);
+      const activePF=PLATFORMS.filter(p=>sb.some(b=>b.platform===p));
+      const m2=REV_METRIC||'gross';
+      const revs=activePF.map(p=>sb.filter(b=>b.platform===p).reduce((sum,b)=>sum+b[m2],0));
+      mkChart('c-sb-'+id_,{
+        type:'doughnut',
+        data:{labels:activePF,datasets:[{data:revs,backgroundColor:activePF.map(p=>PC[p]),borderWidth:2,borderColor:'#fff'}]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}},
+            tooltip:{callbacks:{label:c=>` ${c.label}: ${fc(c.raw)} (${revs.reduce((a,b)=>a+b,0)>0?((c.raw/revs.reduce((a,b)=>a+b,0))*100).toFixed(1)+'%':'0%'})`}}}}
+      });
+    });
+  });
+}
+
+// ============================================================
+//  REVENUE TAB CHARTS
+// ============================================================
+function drawWeekly(done){
+  const metric=REV_METRIC||'gross';
+  const wm={};
+  done.forEach(b=>{
+    if(!b.useDate) return;
+    const d=new Date(b.useDate),ws=new Date(d);
+    ws.setDate(d.getDate()-d.getDay());
+    const k=ws.toISOString().slice(0,10);
+    if(!wm[k]) wm[k]={};
+    wm[k][b.store]=(wm[k][b.store]||0)+b[metric];
+  });
+  const weeks=Object.keys(wm).sort();
+  const label=metric==='gross'?'売上':'実質手取り';
+  // タイトルを動的更新
+  const titleEl=document.getElementById('weekly-chart-title');
+  if(titleEl) titleEl.textContent=`📊 週次${label}推移（店舗別積み上げ）`;
+  mkChart('c-weekly',{
+    type:'bar',
+    data:{
+      labels:weeks.map(w=>{ const d=new Date(w); return `${d.getMonth()+1}/${d.getDate()}週`; }),
+      datasets:STORES.map(s=>({label:s,data:weeks.map(w=>wm[w][s]||0),backgroundColor:SC[s],borderRadius:4}))
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>'¥'+v.toLocaleString()}}}}
+  });
+}
+
+function drawPayment(done){
+  const mp={};
+  done.forEach(b=>{ const p=b.payment||'その他'; mp[p]=(mp[p]||0)+b.gross; });
+  const sorted=Object.entries(mp).sort((a,b)=>b[1]-a[1]);
+  const clrs=['#667eea','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#84cc16'];
+  mkChart('c-payment',{
+    type:'doughnut',
+    data:{labels:sorted.map(([k])=>k),datasets:[{data:sorted.map(([,v])=>v),backgroundColor:clrs,borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${fc(c.raw)}`}}}}
+  });
+}
+
+function drawPurpose(done){
+  const mp={};
+  done.filter(b=>b.purpose).forEach(b=>{ mp[b.purpose]=(mp[b.purpose]||0)+1; });
+  if(!Object.keys(mp).length) return;
+  const sorted=Object.entries(mp).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  mkChart('c-purpose',{
+    type:'bar',
+    data:{
+      labels:sorted.map(([k])=>k.length>14?k.slice(0,14)+'…':k),
+      datasets:[{label:'件数',data:sorted.map(([,v])=>v),backgroundColor:'#667eea',borderRadius:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+function drawRevDist(done){
+  const bk={'〜¥1k':0,'¥1k〜2k':0,'¥2k〜3k':0,'¥3k〜5k':0,'¥5k〜10k':0,'¥10k〜':0};
+  done.forEach(b=>{
+    if(b.gross<=1000) bk['〜¥1k']++;
+    else if(b.gross<=2000) bk['¥1k〜2k']++;
+    else if(b.gross<=3000) bk['¥2k〜3k']++;
+    else if(b.gross<=5000) bk['¥3k〜5k']++;
+    else if(b.gross<=10000) bk['¥5k〜10k']++;
+    else bk['¥10k〜']++;
+  });
+  mkChart('c-revdist',{
+    type:'bar',
+    data:{labels:Object.keys(bk),datasets:[{label:'件数',data:Object.values(bk),backgroundColor:'#8b5cf6',borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+function drawCancel(allF){
+  const active=PLATFORMS.filter(p=>allF.some(b=>b.platform===p));
+  const rates=active.map(p=>{
+    const a=allF.filter(b=>b.platform===p);
+    const c=a.filter(b=>b.status==='cancelled');
+    return a.length>0?+(c.length/a.length*100).toFixed(1):0;
+  });
+  mkChart('c-cancel',{
+    type:'bar',
+    data:{labels:active,datasets:[{label:'キャンセル率(%)',data:rates,backgroundColor:active.map(p=>PC[p]),borderRadius:8}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}}}
+  });
+}
+
+// ============================================================
+//  CUSTOMER TAB
+// ============================================================
+function buildCustMap(done, allBooks){
+  // done: confirmed bookings, allBooks: all (for cancel tracking)
+  const m={};
+  done.forEach(b=>{
+    const n=b.customer; if(!n) return;
+    if(!m[n]) m[n]={cnt:0,gross:0,payout:0,plats:new Set(),stores:new Set(),durs:[],cancelCnt:0,cancelByPlat:{}};
+    m[n].cnt++; m[n].gross+=b.gross; m[n].payout+=b.payout;
+    m[n].plats.add(b.platform); m[n].stores.add(b.store);
+    if(b.duration) m[n].durs.push(b.duration);
+  });
+  // Attach cancel info from allBooks
+  (allBooks||done).filter(b=>b.status==='cancelled').forEach(b=>{
+    const n=b.customer; if(!n||!m[n]) return;
+    m[n].cancelCnt++;
+    m[n].cancelByPlat[b.platform]=(m[n].cancelByPlat[b.platform]||0)+1;
+  });
+  return m;
+}
+
+function drawNewRep(done,allF){
+  const cm=buildCustMap(done,allF);
+  const reps=new Set(Object.entries(cm).filter(([,v])=>v.cnt>=2).map(([k])=>k));
+  mkChart('c-newrep',{
+    type:'bar',
+    data:{
+      labels:STORES,
+      datasets:[
+        {label:'新規(1回)',data:STORES.map(s=>done.filter(b=>b.store===s&&!reps.has(b.customer)).length),backgroundColor:'#93c5fd',borderRadius:4},
+        {label:'リピーター(2回+)',data:STORES.map(s=>done.filter(b=>b.store===s&&reps.has(b.customer)).length),backgroundColor:'#1d4ed8',borderRadius:4},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}}
+  });
+}
+
+function drawBookDist(done,allF){
+  const cm=buildCustMap(done,allF);
+  const dist={'1回':0,'2回':0,'3回':0,'4回':0,'5回':0,'6回以上':0};
+  Object.values(cm).forEach(({cnt})=>{
+    if(cnt===1) dist['1回']++;
+    else if(cnt===2) dist['2回']++;
+    else if(cnt===3) dist['3回']++;
+    else if(cnt===4) dist['4回']++;
+    else if(cnt===5) dist['5回']++;
+    else dist['6回以上']++;
+  });
+  mkChart('c-bookdist',{
+    type:'bar',
+    data:{
+      labels:Object.keys(dist),
+      datasets:[{label:'顧客数',data:Object.values(dist),
+        backgroundColor:['#bfdbfe','#93c5fd','#60a5fa','#3b82f6','#2563eb','#1d4ed8'],borderRadius:8}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+function drawMonthlyNewRep(done){
+  // done here = store-filtered all months
+  const months=getMonths();
+  if(months.length===0) return;
+  // build customer first-appearance map across all data
+  const firstApp={};
+  const sortedAll=[...done].sort((a,b)=>(a.useDate||new Date(0))-(b.useDate||new Date(0)));
+  sortedAll.forEach(b=>{ if(!firstApp[b.customer]) firstApp[b.customer]=ym(b.useDate); });
+
+  const newData=months.map(m=>done.filter(b=>b.useDate&&ym(b.useDate)===m&&firstApp[b.customer]===m).length);
+  const repData=months.map(m=>done.filter(b=>b.useDate&&ym(b.useDate)===m&&firstApp[b.customer]!==m).length);
+  mkChart('c-monthly-newrep',{
+    type:'bar',
+    data:{
+      labels:months.map(ymLabel),
+      datasets:[
+        {label:'新規',data:newData,backgroundColor:'#93c5fd',borderRadius:4},
+        {label:'リピーター',data:repData,backgroundColor:'#1d4ed8',borderRadius:4},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}}
+  });
+}
+
+function drawRegtable(done, allF){
+  const cm=buildCustMap(done, allF);
+  const sorted=Object.entries(cm).sort((a,b)=>b[1].cnt-a[1].cnt||b[1].gross-a[1].gross).slice(0,20);
+  const cancelBadgeClass={'スペースマーケット':'fp-sm','インスタベース':'fp-ib','よやクル':'fp-yk'};
+  const rows=sorted.map(([name,d],i)=>{
+    const r=i+1;
+    const rc=r===1?'r1':r===2?'r2':r===3?'r3':'rn';
+    const avgD=d.durs.length>0?(d.durs.reduce((s,x)=>s+x,0)/d.durs.length).toFixed(1)+'h':'-';
+    const platsStr=[...d.plats].map(p=>PLAT_SHORT[p]||p).join(', ');
+    const storesStr=[...d.stores].join('・');
+    const highlight=r<=3?`style="background:${r===1?'#fffbeb':r===2?'#f9fafb':'#fff9f5'}"`:'' ;
+    const totalBookings=d.cnt+d.cancelCnt;
+    const cancelRate=totalBookings>0?(d.cancelCnt/totalBookings*100).toFixed(0)+'%':'0%';
+    // cancel by plat badges
+    const cancelPlatBadges=d.cancelCnt>0
+      ? Object.entries(d.cancelByPlat).map(([p,n])=>
+          `<span class="fee-pill ${cancelBadgeClass[p]||'fp-sm'}">${PLAT_SHORT[p]}×${n}</span>`
+        ).join('')
+      : '<span style="color:#9ca3af;font-size:.68rem">なし</span>';
+    return `<tr ${highlight}>
+      <td><span class="rank-dot ${rc}">${r}</span></td>
+      <td><strong>${name}</strong></td>
+      <td style="font-weight:700;color:#667eea;font-size:.9rem">${d.cnt}回</td>
+      <td style="font-weight:600">${fc(d.gross)}</td>
+      <td>${fc(d.gross/d.cnt)}</td>
+      <td>${avgD}</td>
+      <td style="color:${d.cancelCnt>0?'#dc2626':'#374151'};font-weight:${d.cancelCnt>0?'700':'400'}">${d.cancelCnt}回 <span style="font-size:.68rem;color:#9ca3af">(${cancelRate})</span></td>
+      <td><div class="fee-breakdown">${cancelPlatBadges}</div></td>
+      <td>${storesStr}</td>
+      <td><span style="font-size:.7rem;color:#6b7280">${platsStr}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('reg-tbl').innerHTML=`
+    <table class="rtbl">
+      <thead><tr>
+        <th>順位</th><th>顧客名</th><th>確定回数</th><th>累計売上</th>
+        <th>平均単価</th><th>平均利用時間</th><th>キャンセル回数(率)</th><th>キャンセルPF</th><th>利用店舗</th><th>PF</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// 顧客別キャンセル Top15 (PF積み上げ)
+function drawCustCancel(allF){
+  const cm={};
+  allF.filter(b=>b.status==='cancelled').forEach(b=>{
+    const n=b.customer; if(!n) return;
+    if(!cm[n]) cm[n]={};
+    cm[n][b.platform]=(cm[n][b.platform]||0)+1;
+  });
+  const sorted=Object.entries(cm)
+    .map(([n,byP])=>({n, total:Object.values(byP).reduce((s,v)=>s+v,0), byP}))
+    .sort((a,b)=>b.total-a.total).slice(0,15);
+  if(!sorted.length) return;
+  const activePF=PLATFORMS.filter(p=>sorted.some(r=>r.byP[p]));
+  mkChart('c-cust-cancel',{
+    type:'bar',
+    data:{
+      labels:sorted.map(r=>r.n.length>10?r.n.slice(0,10)+'…':r.n),
+      datasets:activePF.map(p=>({
+        label:p,
+        data:sorted.map(r=>r.byP[p]||0),
+        backgroundColor:PC[p],borderRadius:3,
+      }))
+    },
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},
+      scales:{x:{stacked:true,beginAtZero:true,ticks:{stepSize:1}},y:{stacked:true}}}
+  });
+}
+
+// PF別 キャンセル件数・率
+function drawCancelByPlat(allF){
+  const active=PLATFORMS.filter(p=>allF.some(b=>b.platform===p));
+  const cnts=active.map(p=>allF.filter(b=>b.platform===p&&b.status==='cancelled').length);
+  const rates=active.map(p=>{
+    const a=allF.filter(b=>b.platform===p);
+    const c=a.filter(b=>b.status==='cancelled');
+    return a.length>0?+(c.length/a.length*100).toFixed(1):0;
+  });
+  mkChart('c-cancel-plat',{
+    type:'bar',
+    data:{
+      labels:active,
+      datasets:[
+        {label:'キャンセル件数',data:cnts,backgroundColor:active.map(p=>PC[p]),borderRadius:5,yAxisID:'y'},
+        {label:'キャンセル率(%)',data:rates,type:'line',borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.1)',pointRadius:6,yAxisID:'y2'},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{
+        y:{beginAtZero:true,title:{display:true,text:'件数'}},
+        y2:{position:'right',grid:{display:false},max:100,ticks:{callback:v=>v+'%'},title:{display:true,text:'率(%)'}},
+      }}
+  });
+}
+
+// ============================================================
+//  USAGE PATTERN TAB (all stacked by platform)
+// ============================================================
+function platStackedDatasets(buckets){
+  // buckets: { label: { platform: count } }
+  const labels=Object.keys(buckets);
+  const activePF=PLATFORMS.filter(p=>Object.values(buckets).some(b=>(b[p]||0)>0));
+  return {
+    labels,
+    datasets:activePF.map(p=>({
+      label:p,
+      data:labels.map(l=>buckets[l][p]||0),
+      backgroundColor:PC[p],
+      borderRadius:4,
+      stack:'main',
+    }))
+  };
+}
+
+function drawWeekday(done){
+  const days=['日','月','火','水','木','金','土'];
+  const bk={};
+  days.forEach(d=>{ bk[d]={}; });
+  done.forEach(b=>{
+    if(!b.useDate) return;
+    const d=days[b.useDate.getDay()];
+    bk[d][b.platform]=(bk[d][b.platform]||0)+1;
+  });
+  const {labels,datasets}=platStackedDatasets(bk);
+  mkChart('c-weekday',{
+    type:'bar', data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+function drawHourly(done){
+  const bk={};
+  for(let h=0;h<24;h++) bk[h+'時']={};
+  done.forEach(b=>{
+    if(b.startHour===null||b.startHour===undefined) return;
+    const k=b.startHour+'時';
+    bk[k][b.platform]=(bk[k][b.platform]||0)+1;
+  });
+  const hasData=Object.values(bk).some(v=>Object.values(v).some(n=>n>0));
+  if(!hasData) return;
+  const {labels,datasets}=platStackedDatasets(bk);
+  mkChart('c-hourly',{
+    type:'bar', data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+function drawDur(done){
+  const bins=['〜1h','1〜2h','2〜3h','3〜4h','4〜6h','6〜8h','8h〜'];
+  const bk={}; bins.forEach(k=>bk[k]={});
+  done.filter(b=>b.duration).forEach(b=>{
+    const d=b.duration;
+    const k=d<=1?'〜1h':d<=2?'1〜2h':d<=3?'2〜3h':d<=4?'3〜4h':d<=6?'4〜6h':d<=8?'6〜8h':'8h〜';
+    bk[k][b.platform]=(bk[k][b.platform]||0)+1;
+  });
+  const {labels,datasets}=platStackedDatasets(bk);
+  mkChart('c-dur',{
+    type:'bar', data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+}
+
+function drawAvgDur(done){
+  // grouped bar: x=stores, groups=platforms
+  const activePF=PLATFORMS.filter(p=>done.some(b=>b.platform===p&&b.duration));
+  mkChart('c-avgdur',{
+    type:'bar',
+    data:{
+      labels:STORES,
+      datasets:activePF.map(p=>({
+        label:p,
+        data:STORES.map(s=>{
+          const durs=done.filter(b=>b.store===s&&b.platform===p&&b.duration).map(b=>b.duration);
+          return durs.length>0?Math.round(durs.reduce((s,d)=>s+d,0)/durs.length*10)/10:0;
+        }),
+        backgroundColor:PC[p],borderRadius:4,
+      }))
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{y:{beginAtZero:true,title:{display:true,text:'時間 (h)'}}}}
+  });
+}
+
+// ============================================================
+//  PLATFORM TAB
+// ============================================================
+function drawPlatKPI(done, allF){
+  const active=PLATFORMS.filter(p=>allF.some(b=>b.platform===p));
+  document.getElementById('kpi-plat').innerHTML=active.map(p=>{
+    const pb=done.filter(b=>b.platform===p);
+    const ab=allF.filter(b=>b.platform===p);
+    const tg=pb.reduce((s,b)=>s+b.gross,0);
+    const tp=pb.reduce((s,b)=>s+b.payout,0);
+    const cr=ab.length>0?(ab.filter(b=>b.status==='cancelled').length/ab.length*100).toFixed(1):0;
+    const comm=tg>0?((1-tp/tg)*100).toFixed(1):0;
+    const fincodeNote=p==='よやクル'?`<div style="font-size:.65rem;color:#c2410c;margin-top:2px">うちfincode手数料 ${fc(pb.reduce((s,b)=>s+b.fincodeFee,0))}</div>`:'';
+    return `<div class="kpi" style="border-top:4px solid ${PC[p]}">
+      <div class="kpi-l" style="color:${PC[p]}">${p}</div>
+      <div class="kpi-v" style="font-size:1.1rem">${fc(tg)}</div>
+      <div class="kpi-s">${pb.length}件 | キャンセル率 ${cr}% | 実効手数料率 ${comm}%</div>
+      ${fincodeNote}
+    </div>`;
+  }).join('');
+}
+
+function drawPlatCmp(done){
+  const active=PLATFORMS.filter(p=>ALL.some(b=>b.platform===p));
+  mkChart('c-platcmp',{
+    type:'bar',
+    data:{
+      labels:active,
+      datasets:[
+        {label:'売上',data:active.map(p=>done.filter(b=>b.platform===p).reduce((s,b)=>s+b.gross,0)),backgroundColor:active.map(p=>PC[p]),borderRadius:4,yAxisID:'y'},
+        {label:'件数',data:active.map(p=>done.filter(b=>b.platform===p).length),type:'line',borderColor:'#374151',pointRadius:6,yAxisID:'y2'},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{y:{ticks:{callback:v=>'¥'+v.toLocaleString()}},y2:{position:'right',grid:{display:false},title:{display:true,text:'件数'}}}}
+  });
+}
+
+function drawStorePlat(done){
+  const active=PLATFORMS.filter(p=>done.some(b=>b.platform===p));
+  mkChart('c-stplat',{
+    type:'bar',
+    data:{
+      labels:STORES,
+      datasets:active.map(p=>({
+        label:p,
+        data:STORES.map(s=>done.filter(b=>b.store===s&&b.platform===p).reduce((sum,b)=>sum+b.gross,0)),
+        backgroundColor:PC[p],borderRadius:4,
+      }))
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>'¥'+v.toLocaleString()}}}}
+  });
+}
+
+function drawComm(done){
+  const active=PLATFORMS.filter(p=>done.some(b=>b.platform===p));
+  const rates=active.map(p=>{
+    const pb=done.filter(b=>b.platform===p);
+    const g=pb.reduce((s,b)=>s+b.gross,0);
+    const py=pb.reduce((s,b)=>s+b.payout,0);
+    return g>0?Math.round((1-py/g)*1000)/10:0;
+  });
+  mkChart('c-comm',{
+    type:'bar',
+    data:{labels:active,datasets:[{label:'実効手数料率(%)',data:rates,backgroundColor:active.map(p=>PC[p]),borderRadius:8}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,ticks:{callback:v=>v+'%'}}}}
+  });
+}
+
+function drawPlatAvg(done){
+  const active=PLATFORMS.filter(p=>done.some(b=>b.platform===p));
+  mkChart('c-platavg',{
+    type:'bar',
+    data:{labels:active,datasets:[{label:'平均単価',data:active.map(p=>{ const pb=done.filter(b=>b.platform===p); return pb.length>0?Math.round(pb.reduce((s,b)=>s+b.gross,0)/pb.length):0; }),backgroundColor:active.map(p=>PC[p]),borderRadius:8}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,ticks:{callback:v=>'¥'+v.toLocaleString()}}}}
+  });
+}
+
+// PF別 手数料金額の棒グラフ（手数料合計 = gross - payout）
+function drawCommAmount(done){
+  const active=PLATFORMS.filter(p=>done.some(b=>b.platform===p));
+  // 手数料合計 = 売上 - 実質手取り（SM/IB=PF手数料のみ, YK=PF手数料+fincode）
+  const feeAmounts=active.map(p=>{
+    const pb=done.filter(b=>b.platform===p);
+    return pb.reduce((s,b)=>s+(b.gross-b.payout),0);
+  });
+  mkChart('c-comm-amount',{
+    type:'bar',
+    data:{
+      labels:active,
+      datasets:[{
+        label:'手数料合計',
+        data:feeAmounts,
+        backgroundColor:active.map(p=>PC[p]),
+        borderRadius:8,
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>{
+          const p=active[c.dataIndex];
+          const pb=done.filter(b=>b.platform===p);
+          const fc2=pb.reduce((s,b)=>s+(b.fincodeFee||0),0);
+          const base=[` ${fc(c.raw)}`];
+          if(p==='よやクル'&&fc2>0) base.push(`  うちfincode手数料: ${fc(fc2)}`);
+          return base;
+        }}}
+      },
+      scales:{y:{beginAtZero:true,ticks:{callback:v=>'¥'+v.toLocaleString()}}}}
+  });
+}
+
+// 売上・手数料・手取り の積み上げ棒グラフ
+function drawGrossFeePayout(done){
+  const active=PLATFORMS.filter(p=>done.some(b=>b.platform===p));
+  const grossArr=active.map(p=>done.filter(b=>b.platform===p).reduce((s,b)=>s+b.gross,0));
+  const payoutArr=active.map(p=>done.filter(b=>b.platform===p).reduce((s,b)=>s+b.payout,0));
+  const feeArr=active.map((p,i)=>grossArr[i]-payoutArr[i]);
+  mkChart('c-gross-fee-payout',{
+    type:'bar',
+    data:{
+      labels:active,
+      datasets:[
+        {label:'実質手取り',data:payoutArr,backgroundColor:active.map(p=>PC[p]),borderRadius:4},
+        {label:'手数料合計',data:feeArr,backgroundColor:'rgba(239,68,68,.55)',borderRadius:4},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>'¥'+v.toLocaleString()}}}}
+  });
+}
+
+// PF別 手数料詳細テーブル
+function drawFeeDetailTable(done){
+  const active=PLATFORMS.filter(p=>done.some(b=>b.platform===p));
+  const rows=active.map(p=>{
+    const pb=done.filter(b=>b.platform===p);
+    const gross=pb.reduce((s,b)=>s+b.gross,0);
+    const payout=pb.reduce((s,b)=>s+b.payout,0);
+    const fincode=pb.reduce((s,b)=>s+(b.fincodeFee||0),0);
+    const totalFee=gross-payout;
+    const rate=gross>0?((totalFee/gross)*100).toFixed(1):0;
+    const cls={'スペースマーケット':'b-sm','インスタベース':'b-ib','よやクル':'b-yk'}[p]||'b-sm';
+    // よやクルのみfincodeを内訳表示、SM/IBはハイフン
+    const fincodeCell=p==='よやクル'
+      ? `<td style="color:#c2410c;font-weight:600">${fc(fincode)}</td><td style="color:#c2410c;font-size:.72rem">${gross>0?((fincode/gross)*100).toFixed(1):'0'}%</td>`
+      : `<td style="color:#9ca3af;font-size:.72rem">-</td><td style="color:#9ca3af;font-size:.72rem">-</td>`;
+    return `<tr>
+      <td><span class="badge ${cls}">${p}</span></td>
+      <td style="font-weight:600">${fc(gross)}</td>
+      <td style="font-weight:600">${fc(payout)}</td>
+      <td style="color:#ef4444;font-weight:700">${fc(totalFee)}</td>
+      <td style="color:#ef4444">${rate}%</td>
+      ${fincodeCell}
+      <td>${pb.length}件</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('fee-detail-tbl').innerHTML=`
+    <table>
+      <thead><tr>
+        <th>プラットフォーム</th><th>売上合計</th><th>実質手取り</th>
+        <th>手数料合計</th><th>手数料率</th>
+        <th>fincode手数料<br><span style="font-size:.65rem;font-weight:400;color:#9ca3af">（YKのみ）</span></th>
+        <th>fincode率</th><th>件数</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ============================================================
+//  ISSUES TAB
+// ============================================================
+function drawIssues(done, allF){
+  const issues=[];
+
+  // ── キャンセル率分析 ──
+  PLATFORMS.forEach(p=>{
+    const ab=allF.filter(b=>b.platform===p); if(!ab.length) return;
+    const cc=ab.filter(b=>b.status==='cancelled');
+    const rate=cc.length/ab.length*100;
+    if(rate>=20){
+      issues.push({sev:'red',ico:'❌',cat:'キャンセル',
+        title:`${p} のキャンセル率が高い`,
+        metric:`キャンセル率 ${rate.toFixed(1)}% (${cc.length}/${ab.length}件)`,
+        body:`${p} からの予約のうち ${rate.toFixed(1)}% がキャンセルされています。業界目安の10〜15%を大きく超えており、売上機会の損失につながっています。`,
+        action:`<strong>改善策：</strong> キャンセルポリシーの見直し（直前キャンセルへのペナルティ強化）、予約確定後のリマインド通知強化、${p} での長期・大口予約に対する事前確認フローの導入を検討してください。`
+      });
+    } else if(rate>=10){
+      issues.push({sev:'yellow',ico:'⚠️',cat:'キャンセル',
+        title:`${p} のキャンセル率がやや高め`,
+        metric:`キャンセル率 ${rate.toFixed(1)}% (${cc.length}/${ab.length}件)`,
+        body:`${p} のキャンセル率が ${rate.toFixed(1)}% と許容ラインに近づいています。`,
+        action:`<strong>改善策：</strong> キャンセルの多い顧客へのフォローアップや、リマインドメール配信を強化することで改善が見込めます。`
+      });
+    }
+  });
+
+  // ── 手数料率分析 ──
+  const pfFeeRates=[];
+  PLATFORMS.forEach(p=>{
+    const pb=done.filter(b=>b.platform===p); if(!pb.length) return;
+    const gross=pb.reduce((s,b)=>s+b.gross,0);
+    const payout=pb.reduce((s,b)=>s+b.payout,0);
+    const rate=gross>0?(1-payout/gross)*100:0;
+    pfFeeRates.push({p,rate,gross,fee:gross-payout,cnt:pb.length});
+    if(rate>=30){
+      issues.push({sev:'red',ico:'💸',cat:'手数料',
+        title:`${p} の手数料率が高い`,
+        metric:`実効手数料率 ${rate.toFixed(1)}% (手数料 ${fc(gross-payout)})`,
+        body:`${p} に支払っている手数料は売上の ${rate.toFixed(1)}% に相当します。他プラットフォームと比べて高い水準です。`,
+        action:`<strong>改善策：</strong> よやクル（自社予約）の比率を高めることで手数料コストを削減できます。既存顧客にはよやクルへの誘導（LINE・メール案内）を積極的に行い、直接予約の割合を高めましょう。`
+      });
+    }
+  });
+
+  // ── リピーター率分析 ──
+  STORES.forEach(s=>{
+    const sb=done.filter(b=>b.store===s); if(sb.length<5) return;
+    const cm={};
+    sb.forEach(b=>{ cm[b.customer]=(cm[b.customer]||0)+1; });
+    const total=Object.keys(cm).length;
+    const reps=Object.values(cm).filter(v=>v>=2).length;
+    const repRate=total>0?(reps/total*100):0;
+    if(repRate<30){
+      issues.push({sev:'yellow',ico:'👥',cat:'リピーター',
+        title:`${s}店のリピーター率が低い`,
+        metric:`リピーター率 ${repRate.toFixed(1)}% (${reps}/${total}名)`,
+        body:`${s}店の常連客比率が ${repRate.toFixed(1)}% と低く、新規顧客への依存度が高い状態です。新規顧客獲得コストは既存顧客維持コストの5倍以上かかると言われています。`,
+        action:`<strong>改善策：</strong> 2回目利用時の割引クーポン配布、LINE公式アカウントでの定期フォロー、誕生月優待などのロイヤルティプログラムの導入を検討してください。`
+      });
+    } else if(repRate>=50){
+      issues.push({sev:'ok',ico:'⭐',cat:'リピーター',
+        title:`${s}店のリピーター率が優秀`,
+        metric:`リピーター率 ${repRate.toFixed(1)}% (${reps}/${total}名)`,
+        body:`${s}店は常連客比率が高く、安定した売上基盤があります。この顧客層を維持しながら新規顧客も獲得することが次の成長ステップです。`,
+        action:`<strong>継続施策：</strong> 常連顧客への感謝イベントや先行予約権の提供、口コミ・紹介キャンペーンで新規獲得につなげましょう。`
+      });
+    }
+  });
+
+  // ── 曜日別稼働分析 ──
+  const days=['日','月','火','水','木','金','土'];
+  const dayCnts=new Array(7).fill(0);
+  done.forEach(b=>{ if(b.useDate) dayCnts[b.useDate.getDay()]++; });
+  const total=dayCnts.reduce((s,v)=>s+v,0);
+  if(total>0){
+    const lowDays=days.filter((_,i)=>dayCnts[i]/total<0.08&&dayCnts[i]>0);
+    const highDays=days.filter((_,i)=>dayCnts[i]/total>0.2);
+    if(lowDays.length){
+      issues.push({sev:'yellow',ico:'📅',cat:'稼働率',
+        title:`特定曜日（${lowDays.join('・')}曜）の稼働率が低い`,
+        metric:`${lowDays.map(d=>d+'曜: '+dayCnts[days.indexOf(d)]+'件').join(' / ')}`,
+        body:`${lowDays.join('・')}曜日の予約件数が全体の8%未満と少なく、空き枠が多い状態です。`,
+        action:`<strong>改善策：</strong> ${lowDays.join('・')}曜日限定の割引プランや早割キャンペーン、SNSでの「空き情報」の発信を行い、閑散日の稼働率を高めましょう。`
+      });
+    }
+    if(highDays.length){
+      issues.push({sev:'info',ico:'📊',cat:'稼働率',
+        title:`${highDays.join('・')}曜に予約が集中`,
+        metric:`${highDays.map(d=>d+'曜: '+dayCnts[days.indexOf(d)]+'件').join(' / ')}`,
+        body:`${highDays.join('・')}曜日に予約が集中しており、人気時間帯は争奪戦になっている可能性があります。`,
+        action:`<strong>改善策：</strong> ピーク日は通常料金より若干高めの価格設定（ダイナミックプライシング）を検討し、収益最大化を図りましょう。平日への分散誘導も有効です。`
+      });
+    }
+  }
+
+  // ── 時間帯分析 ──
+  const hourCnts=new Array(24).fill(0);
+  done.forEach(b=>{ if(b.startHour!==null&&b.startHour!==undefined) hourCnts[b.startHour]++; });
+  const hasHour=hourCnts.some(v=>v>0);
+  if(hasHour){
+    const earlyMorning=hourCnts.slice(6,10).reduce((s,v)=>s+v,0);
+    const lateNight=hourCnts.slice(21,24).reduce((s,v)=>s+v,0);
+    const eveningPeak=hourCnts.slice(17,21).reduce((s,v)=>s+v,0);
+    const totalH=hourCnts.reduce((s,v)=>s+v,0);
+    if(eveningPeak/totalH>0.4){
+      issues.push({sev:'info',ico:'🌆',cat:'時間帯',
+        title:'夜間(17〜21時)への予約集中',
+        metric:`夕方〜夜の予約比率: ${(eveningPeak/totalH*100).toFixed(0)}%`,
+        body:'17〜21時に全予約の40%以上が集中しています。この時間帯はキャンセルが出た際の再予約も取りにくい傾向があります。',
+        action:'<strong>改善策：</strong> 午前・お昼の「お得なデイタイムプラン」を設け、時間帯の分散を促しましょう。美容師や治療師など専業クリエイターには早朝・日中の方が都合が良いケースも多いです。'
+      });
+    }
+  }
+
+  // ── 平均単価分析 ──
+  STORES.forEach(s=>{
+    const sb=done.filter(b=>b.store===s); if(!sb.length) return;
+    const avg=sb.reduce((sum,b)=>sum+b.gross,0)/sb.length;
+    if(avg<2000){
+      issues.push({sev:'yellow',ico:'💴',cat:'単価',
+        title:`${s}店の平均単価が低い`,
+        metric:`平均単価 ${fc(avg)} / 件`,
+        body:`${s}店の1件あたり平均売上が ${fc(avg)} と低水準です。短時間利用の割合が高い可能性があります。`,
+        action:`<strong>改善策：</strong> 2時間以上利用で10%割引などの「長時間パック」を設定し、1回あたりの売上単価を高めましょう。また、備品・オプションサービス（鏡・照明機材など）の有料レンタルで追加収益を狙えます。`
+      });
+    }
+  });
+
+  // ── よやクル比率 ──
+  const ykDone=done.filter(b=>b.platform==='よやクル').length;
+  const ykRate=done.length>0?(ykDone/done.length*100):0;
+  if(done.length>10&&ykRate<20){
+    issues.push({sev:'info',ico:'📱',cat:'直接予約',
+      title:'自社予約（よやクル）の比率が低い',
+      metric:`よやクル比率 ${ykRate.toFixed(1)}% (${ykDone}/${done.length}件)`,
+      body:`全予約に占めるよやクル（自社予約）の比率が ${ykRate.toFixed(1)}% と低く、外部PFへの手数料支払いが多くなっています。`,
+      action:'<strong>改善策：</strong> LINE公式アカウント・Instagram経由でよやクルの予約リンクを積極発信。2回目以降はよやクルで予約することを案内し、直接予約の比率を高めることで手数料コストを削減できます。'
+    });
+  }
+
+  // ── データ不足の場合 ──
+  if(!issues.length){
+    issues.push({sev:'ok',ico:'✅',cat:'総合',
+      title:'現在検出された課題はありません',
+      metric:'すべての指標が正常範囲内です',
+      body:'アップロードされたデータの範囲では、特に目立った課題は検出されませんでした。引き続きデータを蓄積して定期的に分析を続けることをお勧めします。',
+      action:'<strong>継続施策：</strong> 月次でのデータ更新と分析により、トレンドの変化をいち早く察知しましょう。'
+    });
+  }
+
+  // ── 手数料サマリーカード ──
+  const totalGross=done.reduce((s,b)=>s+b.gross,0);
+  const totalFee=done.reduce((s,b)=>s+(b.gross-b.payout),0);
+  const totalFincode=done.reduce((s,b)=>s+(b.fincodeFee||0),0);
+  const summaryHTML=totalGross>0?`
+    <div class="issue-section-title">💰 コスト・収益サマリー</div>
+    <div class="kpi-grid">
+      ${[
+        ['総売上',fc(totalGross),'確定予約ベース'],
+        ['総手数料支払',fc(totalFee),`売上の${(totalFee/totalGross*100).toFixed(1)}%`],
+        ['うちfincode手数料',fc(totalFincode),`よやクル分のみ`],
+        ['実質手取り合計',fc(totalGross-totalFee),'全PF合算'],
+        ['手取り率',((1-totalFee/totalGross)*100).toFixed(1)+'%','高いほど良い'],
+      ].map(([l,v,s])=>`<div class="kpi"><div class="kpi-l">${l}</div><div class="kpi-v" style="font-size:1.2rem">${v}</div><div class="kpi-s">${s}</div></div>`).join('')}
+    </div>`:'' ;
+
+  const sevOrder={red:0,yellow:1,info:2,ok:3};
+  const sorted=[...issues].sort((a,b)=>(sevOrder[a.sev]||0)-(sevOrder[b.sev]||0));
+
+  const criticalHTML=sorted.filter(i=>i.sev==='red').length
+    ? `<div class="issue-section-title">🔴 重要な課題（要対応）</div>
+       <div class="issue-grid">${sorted.filter(i=>i.sev==='red').map(issueCard).join('')}</div>`:'' ;
+  const warnHTML=sorted.filter(i=>i.sev==='yellow').length
+    ? `<div class="issue-section-title">🟡 注意が必要な項目</div>
+       <div class="issue-grid">${sorted.filter(i=>i.sev==='yellow').map(issueCard).join('')}</div>`:'' ;
+  const infoHTML=sorted.filter(i=>i.sev==='info').length
+    ? `<div class="issue-section-title">🔵 参考情報・改善ヒント</div>
+       <div class="issue-grid">${sorted.filter(i=>i.sev==='info').map(issueCard).join('')}</div>`:'' ;
+  const okHTML=sorted.filter(i=>i.sev==='ok').length
+    ? `<div class="issue-section-title">🟢 良好な項目</div>
+       <div class="issue-grid">${sorted.filter(i=>i.sev==='ok').map(issueCard).join('')}</div>`:'' ;
+
+  document.getElementById('issues-content').innerHTML=summaryHTML+criticalHTML+warnHTML+infoHTML+okHTML;
+}
+
+function issueCard(issue){
+  const cls=issue.sev==='red'?'':issue.sev==='yellow'?'warn':issue.sev==='info'?'info':'ok';
+  return `<div class="issue-card ${cls}">
+    <div class="issue-header">
+      <div class="issue-ico">${issue.ico}</div>
+      <div class="issue-htxt">
+        <div class="issue-title">${issue.title}</div>
+        <div class="issue-metric ${issue.sev==='red'?'red':issue.sev==='yellow'?'yellow':issue.sev==='info'?'blue':'green'}">${issue.metric}</div>
+      </div>
+      <span class="badge" style="background:#f3f4f6;color:#6b7280;font-size:.65rem">${issue.cat}</span>
+    </div>
+    <div class="issue-body">${issue.body}</div>
+    <div class="issue-action">${issue.action}</div>
+  </div>`;
+}
+
+// ============================================================
+//  DATA TABLE
+// ============================================================
+function renderTable(){
+  const plF=document.getElementById('df-plat')?.value||'';
+  const stF=document.getElementById('df-status')?.value||'';
+  const q=(document.getElementById('df-q')?.value||'').toLowerCase();
+  const pb={'スペースマーケット':'b-sm','インスタベース':'b-ib','よやクル':'b-yk'};
+  const sb={'五反田':'b-gt','恵比寿':'b-eb','武蔵小杉':'b-mk'};
+
+  let rows=getFiltered('any').filter(b=>{
+    if(plF&&b.platform!==plF) return false;
+    if(stF&&b.status!==stF) return false;
+    if(q&&!b.customer.toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a,b)=>(b.useDate||new Date(0))-(a.useDate||new Date(0)));
+
+  const tr=rows.slice(0,300).map(b=>`
+    <tr>
+      <td>${fd(b.useDate)}</td>
+      <td><span class="badge ${pb[b.platform]||'b-sm'}">${PLAT_SHORT[b.platform]||b.platform}</span></td>
+      <td><span class="badge ${sb[b.store]||'b-gt'}">${b.store}</span></td>
+      <td>${b.customer}</td>
+      <td>${b.duration?b.duration+'h':'-'}</td>
+      <td style="font-weight:600">${fc(b.gross)}</td>
+      <td>${fc(b.payout)}</td>
+      ${b.fincodeFee?`<td style="color:#c2410c;font-size:.7rem">-${fc(b.fincodeFee)}</td>`:'<td>-</td>'}
+      <td>${b.payment}</td>
+      <td><span class="badge ${b.status==='completed'?'b-ok':'b-ng'}">${b.status==='completed'?'確定':'ｷｬﾝｾﾙ'}</span></td>
+    </tr>`).join('');
+
+  document.getElementById('tbl-body').innerHTML=`
+    <div style="font-size:.73rem;color:#6b7280;margin-bottom:8px">${rows.length}件${rows.length>300?' (300件まで表示)':''}</div>
+    <table>
+      <thead><tr>
+        <th>利用日</th><th>PF</th><th>店舗</th><th>顧客名</th>
+        <th>利用時間</th><th>売上</th><th>振込額</th><th>fincode手数料</th><th>決済方法</th><th>ステータス</th>
+      </tr></thead>
+      <tbody>${tr}</tbody>
+    </table>`;
+}
+
+// ============================================================
+//  TAB SWITCHING
+// ============================================================
+function switchTab(el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+el.dataset.tab).classList.add('active');
+}
+</script>
+</body>
+</html>
