@@ -57,6 +57,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI'
 .tab:hover{background:#f3f4f6;color:#374151}
 .tab.active{background:#667eea;color:#fff}
 .tc{display:none}.tc.active{display:block}
+.stc{display:none}.stc.active{display:block}
 
 /* ── KPI Cards ── */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-bottom:18px}
@@ -147,7 +148,99 @@ tr:hover td{background:#fafafa}
 /* ── Section label ── */
 .sec-label{font-size:.8rem;font-weight:700;color:#374151;margin-bottom:10px;padding:6px 0;border-bottom:2px solid #f3f4f6;display:flex;align-items:center;gap:6px}
 
-@media(max-width:700px){.up-grid,.store-grid,.cgrid{grid-template-columns:1fr}.gfilter{flex-direction:column;align-items:flex-start}}
+/* ── Mobile / Responsive ── */
+@media(max-width:700px){
+  /* Layout */
+  .up-grid{grid-template-columns:1fr 1fr}
+  .store-grid,.cgrid,.store-profit-grid,.bep-grid,.goal-grid,.exp-trend-kpi{grid-template-columns:1fr}
+  .gfilter{flex-direction:column;align-items:flex-start;gap:10px;padding:10px 14px}
+  .gf-group{flex-wrap:wrap}
+  .divider{display:none}
+  .main{padding:12px 14px}
+  .hdr{padding:12px 16px}
+  .hdr h1{font-size:1rem}
+  /* Tabs: scrollable */
+  .tabs{gap:1px;padding:3px;border-radius:8px}
+  .tab{padding:5px 10px;font-size:.72rem}
+  /* KPI */
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .kpi-v{font-size:1.1rem}
+  /* Charts */
+  .ccard.wide{grid-column:1}
+  /* Upload */
+  .up-sec{padding:12px 14px}
+  .up-grid{grid-template-columns:1fr}
+  /* Expense rows */
+  .exp-row-store{grid-template-columns:70px 70px 1fr}
+  .exp-row-store .btn-pin,.exp-row-store .btn-exp-del{display:none}
+  .exp-row-common{grid-template-columns:70px 1fr}
+  .exp-row-common .btn-pin,.exp-row-common .btn-exp-del{display:none}
+  /* Profit toggle */
+  .profit-toggle-bar{flex-direction:column;align-items:flex-start;gap:8px}
+  /* Period bar */
+  .exp-period-bar{flex-direction:column;align-items:flex-start;gap:6px}
+  .exp-period-bar>div:last-child{flex-wrap:wrap;gap:4px}
+  /* Table overflow */
+  .twrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:600px}
+}
+@media(max-width:400px){
+  .kpi-grid{grid-template-columns:1fr}
+  .up-grid{grid-template-columns:1fr}
+  .tabs{font-size:.68rem}
+}
+
+/* ── Expense Tab ── */
+.exp-section{background:#fff;border-radius:10px;padding:14px 18px;box-shadow:0 1px 3px rgba(0,0,0,.07);margin-bottom:14px}
+.exp-period-bar{background:#fff;border-radius:10px;padding:10px 16px;box-shadow:0 1px 3px rgba(0,0,0,.07);margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.month-block{border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px;overflow:hidden}
+.month-hdr{background:#f9fafb;padding:9px 14px;font-size:.82rem;font-weight:700;color:#374151;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.month-hdr:hover{background:#f3f4f6}
+.month-body{padding:12px 16px;display:none}
+.month-body.open{display:block}
+.exp-col-hdr{font-size:.65rem;color:#9ca3af;font-weight:700;padding-bottom:4px}
+.exp-row{display:grid;gap:6px;align-items:end;margin-bottom:5px}
+.exp-row-store{grid-template-columns:90px 90px 1fr 100px 80px 28px}
+.exp-row-common{grid-template-columns:90px 1fr 100px 80px 28px}
+.exp-input{padding:5px 8px;font-size:.78rem;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#1a1a2e;width:100%}
+.exp-input:focus{outline:none;border-color:#667eea}
+.exp-select{padding:5px 6px;font-size:.78rem;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#1a1a2e;width:100%}
+.btn-pin{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;border-radius:6px;cursor:pointer;padding:4px 8px;font-size:.68rem;font-weight:700;white-space:nowrap}
+.btn-pin:hover{background:#ffedd5}
+.btn-exp-add{background:#fff;border:1px dashed #d1d5db;border-radius:6px;color:#6b7280;cursor:pointer;padding:5px 10px;font-size:.73rem;margin-top:4px}
+.btn-exp-add:hover{border-color:#667eea;color:#667eea}
+.btn-exp-del{background:transparent;border:none;color:#d1d5db;cursor:pointer;font-size:1rem;padding:2px 4px;line-height:1}
+.btn-exp-del:hover{color:#ef4444}
+.exp-divider{height:1px;background:#f3f4f6;margin:10px 0}
+.tag-store-badge{display:inline-block;font-size:.65rem;padding:1px 7px;border-radius:20px;font-weight:700;background:#dbeafe;color:#1d4ed8}
+.tag-common-badge{display:inline-block;font-size:.65rem;padding:1px 7px;border-radius:20px;font-weight:700;background:#f3e8ff;color:#7c3aed}
+
+/* ── Popup overlay ── */
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:flex;align-items:center;justify-content:center}
+.popup-box{background:#fff;border-radius:12px;padding:22px 24px;width:360px;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.popup-title{font-size:.9rem;font-weight:700;color:#111827;margin-bottom:6px}
+.popup-sub{font-size:.75rem;color:#6b7280;margin-bottom:14px;line-height:1.5}
+.popup-period{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end;margin-bottom:10px}
+.popup-preview{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:7px 12px;font-size:.75rem;color:#166534;margin-bottom:14px;line-height:1.5}
+.popup-btns{display:flex;gap:8px;justify-content:flex-end}
+
+/* ── Profit tab ── */
+.profit-toggle-bar{background:#fff;border-radius:10px;padding:10px 16px;box-shadow:0 1px 3px rgba(0,0,0,.07);margin-bottom:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.profit-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.profit-kpi{background:#fff;border-radius:10px;padding:11px 15px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.profit-kpi-l{font-size:.67rem;color:#6b7280;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.profit-kpi-v{font-size:1.35rem;font-weight:700;margin-top:3px;line-height:1.1}
+.profit-kpi-s{font-size:.67rem;color:#9ca3af;margin-top:2px}
+.profit-kpi-v.pos{color:#059669}.profit-kpi-v.neg{color:#dc2626}
+.store-profit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.store-profit-card{background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.bep-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px}
+.bep-card{background:#f9fafb;border-radius:8px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center}
+.goal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.goal-card{background:#f9fafb;border-radius:8px;padding:10px 12px}
+
+/* ── Expense trend tab ── */
+.exp-trend-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
 </style>
 </head>
 <body>
@@ -160,10 +253,10 @@ tr:hover td{background:#fafafa}
   </div>
 </div>
 
-<!-- Upload -->
+<!-- Upload + Expense (B-plan) -->
 <div class="up-sec">
-  <h2>📂 CSVファイルを追加（各プラットフォーム複数ファイル可）</h2>
-  <div class="up-grid">
+  <h2>📂 売上CSV ＆ 💰 経費入力</h2>
+  <div class="up-grid" style="grid-template-columns:repeat(3,1fr) 200px">
     <!-- SpaceMarket -->
     <div class="up-card" id="up-sm">
       <div class="up-top">
@@ -212,6 +305,43 @@ tr:hover td{background:#fafafa}
       </div>
       <input type="file" id="fi-yk" accept=".csv" multiple style="display:none" onchange="onFiles(this,'yk')">
     </div>
+    <!-- Expense Entry Card -->
+    <div class="up-card" id="up-exp" style="border-color:#667eea;background:#f5f3ff;cursor:pointer" onclick="toggleExpPanel()">
+      <div class="up-top">
+        <div class="up-ico">💰</div>
+        <div class="up-info">
+          <div class="up-title" style="color:#667eea">経費入力</div>
+          <div class="up-sub" id="exp-card-status">クリックして入力・編集</div>
+        </div>
+      </div>
+      <div class="up-status" id="st-exp" style="color:#667eea;font-weight:600">未入力</div>
+      <div class="up-btns">
+        <button class="btn-add" style="border-color:#667eea;color:#667eea" onclick="event.stopPropagation();toggleExpPanel()">▼ 開いて編集</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expense expand panel -->
+  <div id="exp-panel" style="display:none;margin-top:12px;border:1px solid #e5e7eb;border-radius:10px;background:#fafafa;padding:14px 16px">
+    <div id="exp-no-stores-notice" style="display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:7px;padding:8px 12px;margin-bottom:10px;font-size:.75rem;color:#92400e;line-height:1.5">
+      ⚠️ <strong>売上CSVが読み込まれていません。</strong> 上部の売上CSVをアップロードすると、店舗名がプルダウンに自動反映されます。
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <span style="font-size:.78rem;font-weight:700;color:#374151">入力期間</span>
+      <select class="sel" id="exp-from" style="width:120px" onchange="renderExpMonthBlocks()"></select>
+      <span style="font-size:.8rem;color:#9ca3af">〜</span>
+      <select class="sel" id="exp-to" style="width:120px" onchange="renderExpMonthBlocks()"></select>
+      <span id="exp-period-hint" style="font-size:.72rem;color:#6b7280"></span>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <button class="btn-add" onclick="showExpImportNotice()" style="font-size:.73rem;padding:5px 10px">📂 CSVで読み込む</button>
+        <button class="btn-add" onclick="showExpExportNotice()" style="font-size:.73rem;padding:5px 10px">💾 CSVで出力</button>
+        <button onclick="saveAllExp()" style="padding:5px 14px;background:#667eea;color:#fff;border:none;border-radius:7px;font-size:.78rem;font-weight:700;cursor:pointer">すべて保存</button>
+        <button onclick="showClearAllExpConfirm()" style="padding:5px 10px;border:1px solid #ef4444;border-radius:7px;font-size:.78rem;background:#fff;cursor:pointer;color:#ef4444">🗑 全削除</button>
+        <button onclick="toggleExpPanel()" style="padding:5px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:.78rem;background:#fff;cursor:pointer;color:#6b7280">▲ 閉じる</button>
+      </div>
+      <input type="file" id="exp-csv-input" accept=".csv" style="display:none" onchange="onExpCsvFile(this)">
+    </div>
+    <div id="exp-month-blocks"></div>
   </div>
 </div>
 
@@ -240,11 +370,8 @@ tr:hover td{background:#fafafa}
     <div class="divider"></div>
     <div class="gf-group">
       <span class="gf-label">店舗</span>
-      <div class="toggle-btns">
+      <div class="toggle-btns" id="store-filter-btns">
         <button class="tbtn active" onclick="setStore('all',this)">全店舗</button>
-        <button class="tbtn" onclick="setStore('五反田',this)">五反田</button>
-        <button class="tbtn" onclick="setStore('恵比寿',this)">恵比寿</button>
-        <button class="tbtn" onclick="setStore('武蔵小杉',this)">武蔵小杉</button>
       </div>
     </div>
   </div>
@@ -254,6 +381,8 @@ tr:hover td{background:#fafafa}
     <div class="tabs">
       <div class="tab active" data-tab="overview" onclick="switchTab(this)">📈 概要</div>
       <div class="tab" data-tab="revenue" onclick="switchTab(this)">💴 売上分析</div>
+      <div class="tab" data-tab="expense" onclick="switchTab(this)">📊 利益分析</div>
+      <div class="tab" data-tab="exptrend" onclick="switchTab(this)">📉 経費分析</div>
       <div class="tab" data-tab="customers" onclick="switchTab(this)">👥 顧客分析</div>
       <div class="tab" data-tab="usage" onclick="switchTab(this)">⏰ 利用パターン</div>
       <div class="tab" data-tab="platform" onclick="switchTab(this)">🏢 プラットフォーム比較</div>
@@ -273,7 +402,7 @@ tr:hover td{background:#fafafa}
           <div class="ctitle">📈 日次売上推移（選択期間）</div>
           <div style="height:220px"><canvas id="c-daily"></canvas></div>
         </div>
-        <div class="ccard">
+        <div class="ccard" id="store-rev-card">
           <div class="ctitle">🏪 店舗別売上・件数</div>
           <div style="height:220px"><canvas id="c-store-rev"></canvas></div>
         </div>
@@ -294,7 +423,7 @@ tr:hover td{background:#fafafa}
         </div>
         <span style="font-size:.71rem;color:#9ca3af" id="rev-metric-note">手数料控除前の売上金額を表示中</span>
       </div>
-      <div class="sec-label">🏪 店舗別内訳</div>
+      <div class="sec-label" id="store-breakdown-label">🏪 店舗別内訳</div>
       <div class="store-grid" id="store-breakdown-grid">
         <!-- dynamically filled -->
       </div>
@@ -443,8 +572,152 @@ tr:hover td{background:#fafafa}
         <div id="tbl-body"></div>
       </div>
     </div>
+
+    <!-- ====== 経費・利益 ====== -->
+    <div class="tc" id="tab-expense">
+      <div class="ibox">💡 経費入力は画面上部の「💰 経費入力」カードから行えます。このタブでは利益分析を確認できます。</div>
+      <!-- トグルバー -->
+      <div class="profit-toggle-bar">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:.75rem;font-weight:700;color:#6b7280">共通経費の配分</span>
+          <div class="toggle-btns" id="alloc-toggle">
+            <button class="tbtn active" onclick="setAlloc('total',this)">全体費用として表示</button>
+            <button class="tbtn" onclick="setAlloc('split',this)">3店舗均等割で表示</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:.75rem;font-weight:700;color:#6b7280">目標利益率</span>
+          <input id="goal-rate" type="number" class="sel" style="width:70px" placeholder="例: 30" oninput="drawProfit()">
+          <span style="font-size:.75rem;color:#6b7280">%</span>
+        </div>
+      </div>
+      <!-- KPI -->
+      <div class="profit-kpi-grid" id="profit-kpi"></div>
+      <!-- チャートグリッド -->
+      <div class="cgrid">
+        <div class="ccard wide">
+          <div class="ctitle">📊 月次 売上・手数料・経費・利益 推移</div>
+          <div style="height:260px"><canvas id="c-profit-trend"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">📈 利益率推移</div>
+          <div style="height:220px"><canvas id="c-profit-rate"></canvas></div>
+        </div>
+        <div class="ccard" id="store-profit-chart-card">
+          <div class="ctitle">🏪 店舗別 利益ランキング</div>
+          <div style="height:220px"><canvas id="c-store-profit"></canvas></div>
+        </div>
+      </div>
+      <!-- 店舗別カード -->
+      <div id="store-profit-detail-section">
+        <div class="ctitle" style="margin-bottom:10px">🏅 店舗別 利益詳細</div>
+        <div class="store-profit-grid" id="store-profit-cards"></div>
+      </div>
+      <!-- 損益分岐点 -->
+      <div class="exp-section" id="bep-section">
+        <div class="ctitle" style="margin-bottom:8px">⚖️ 損益分岐点（店舗別）</div>
+        <div class="bep-grid" id="bep-cards"></div>
+        <div style="font-size:.72rem;color:#9ca3af;margin-top:6px;line-height:1.5">損益分岐点 ＝ 固定費 ÷ 限界利益率で算出。固定費はその店舗の家賃カテゴリの合計、限界利益率は売上から変動費を引いた比率です。</div>
+      </div>
+      <!-- 目標達成状況 -->
+      <div class="exp-section">
+        <div class="ctitle" style="margin-bottom:10px">🎯 目標達成状況（直近月）</div>
+        <div class="goal-grid" id="goal-cards"></div>
+      </div>
+      <!-- 利益テーブル -->
+      <div class="twrap">
+        <div class="ctitle" style="margin-bottom:10px">🧾 月次 売上・手数料・経費・利益 一覧</div>
+        <div id="profit-table"></div>
+      </div>
+    </div>
+
+    <!-- ====== 経費推移 ====== -->
+    <div class="tc" id="tab-exptrend">
+      <div class="ibox">📉 経費の月次推移と内訳を確認できます。経費データは画面上部の「💰 経費入力」カードから入力してください。</div>
+      <!-- KPI -->
+      <div class="exp-trend-kpi" id="exptrend-kpi"></div>
+      <!-- チャート -->
+      <div class="cgrid">
+        <div class="ccard wide">
+          <div class="ctitle">📉 月次経費推移（店舗別＋共通 積み上げ）</div>
+          <div style="height:240px"><canvas id="c-exp-monthly"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">🗂 カテゴリ別経費内訳（全期間）</div>
+          <div style="height:230px"><canvas id="c-exp-cat"></canvas></div>
+        </div>
+        <div class="ccard">
+          <div class="ctitle">🏪 店舗別経費合計</div>
+          <div style="height:230px"><canvas id="c-exp-store"></canvas></div>
+        </div>
+        <div class="ccard wide">
+          <div class="ctitle">📊 月次 店舗別経費（前月比）</div>
+          <div style="height:220px"><canvas id="c-exp-mom"></canvas></div>
+        </div>
+      </div>
+      <!-- 経費詳細テーブル -->
+      <div class="twrap">
+        <div class="ctitle" style="margin-bottom:10px">📋 経費明細一覧</div>
+        <div id="exp-detail-tbl"></div>
+      </div>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /dashboard -->
+
+<!-- 固定費登録ポップアップ -->
+<div class="popup-overlay" id="pin-popup" style="display:none">
+  <div class="popup-box">
+    <div class="popup-title">固定費として一括登録</div>
+    <div class="popup-sub" id="pin-popup-sub"></div>
+    <div class="popup-period">
+      <div>
+        <div style="font-size:.72rem;color:#6b7280;margin-bottom:3px">開始月</div>
+        <select class="sel" id="pin-from" style="width:100%" onchange="updatePinPreview()"></select>
+      </div>
+      <span style="font-size:.8rem;color:#9ca3af;padding-bottom:4px">〜</span>
+      <div>
+        <div style="font-size:.72rem;color:#6b7280;margin-bottom:3px">終了月</div>
+        <select class="sel" id="pin-to" style="width:100%" onchange="updatePinPreview()"></select>
+      </div>
+    </div>
+    <div class="popup-preview" id="pin-preview"></div>
+    <div class="popup-btns">
+      <button class="btn-clear" onclick="closePinPopup()">キャンセル</button>
+      <button onclick="execPinRegister()" style="padding:6px 16px;background:#667eea;color:#fff;border:none;border-radius:7px;font-size:.8rem;font-weight:700;cursor:pointer">一括登録する</button>
+    </div>
+  </div>
+</div>
+
+<!-- CSV注意ポップアップ -->
+<div class="popup-overlay" id="csv-notice-popup" style="display:none">
+  <div class="popup-box" style="width:420px">
+    <div class="popup-title" id="csv-notice-title">CSVファイルについて</div>
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:.78rem;color:#92400e;line-height:1.7">
+      <div style="font-weight:700;margin-bottom:6px">⚠️ ご利用前にご確認ください</div>
+      <div id="csv-notice-body"></div>
+    </div>
+    <div class="popup-btns">
+      <button class="btn-clear" onclick="closeCsvNotice()">キャンセル</button>
+      <button id="csv-notice-ok" style="padding:6px 16px;background:#667eea;color:#fff;border:none;border-radius:7px;font-size:.8rem;font-weight:700;cursor:pointer">理解しました・続ける</button>
+    </div>
+  </div>
+</div>
+
+<!-- 経費全削除確認ポップアップ -->
+<div class="popup-overlay" id="clear-exp-popup" style="display:none">
+  <div class="popup-box" style="width:380px">
+    <div class="popup-title">⚠️ 経費データを全削除しますか？</div>
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:.78rem;color:#991b1b;line-height:1.7">
+      入力済みの全経費データ（全月・全店舗）が削除されます。<br>
+      この操作は元に戻せません。事前に「CSVで出力」してバックアップすることをお勧めします。
+    </div>
+    <div class="popup-btns">
+      <button class="btn-clear" onclick="document.getElementById('clear-exp-popup').style.display='none'">キャンセル</button>
+      <button onclick="execClearAllExp()" style="padding:6px 16px;background:#ef4444;color:#fff;border:none;border-radius:7px;font-size:.8rem;font-weight:700;cursor:pointer">全削除する</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ============================================================
@@ -452,11 +725,33 @@ tr:hover td{background:#fafafa}
 // ============================================================
 const FINCODE_RATE = 0.035; // よやクル決済手数料（fincode）
 
-const STORES = ['五反田','恵比寿','武蔵小杉'];
+// STORES は売上CSVロード時に動的生成（案B）
+// 固定カラーパレット（最大8店舗まで対応）
+const STORE_COLORS = ['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#f97316','#84cc16'];
+let STORES = [];      // 動的: CSVロード後に更新
+let SC = {};          // 店舗カラーマップ
+let STORE_ID = {};    // 店舗→短縮IDマップ
+
+function rebuildStoreMeta(){
+  // ALLから店舗名を収集して辞書を再構築
+  const found = [...new Set(ALL.map(b=>b.store).filter(s=>s&&s!=='不明'))].sort();
+  STORES = found;
+  SC = {};
+  STORE_ID = {};
+  found.forEach((s,i)=>{
+    SC[s] = STORE_COLORS[i % STORE_COLORS.length];
+    STORE_ID[s] = 'st'+i;
+  });
+  // グローバルフィルターの店舗ボタンを動的更新（active 状態を保持）
+  const storeToggle = document.getElementById('store-filter-btns');
+  if(storeToggle){
+    storeToggle.innerHTML = `<button class="tbtn${FILTER.store==='all'?' active':''}" onclick="setStore('all',this)">全店舗</button>`
+      + found.map(s=>`<button class="tbtn${FILTER.store===s?' active':''}" onclick="setStore('${s}',this)">${s}</button>`).join('');
+  }
+}
+
 const PLATFORMS = ['スペースマーケット','インスタベース','よやクル'];
-const SC = {'五反田':'#3b82f6','恵比寿':'#10b981','武蔵小杉':'#f59e0b'};
 const PC = {'スペースマーケット':'#8b5cf6','インスタベース':'#06b6d4','よやクル':'#f97316'};
-const STORE_ID = {'五反田':'gt','恵比寿':'eb','武蔵小杉':'mk'};
 const PLAT_SHORT = {'スペースマーケット':'SM','インスタベース':'IB','よやクル':'YK'};
 
 let ALL = [];           // all bookings
@@ -473,11 +768,18 @@ let REV_METRIC = 'gross'; // 'gross'=売上額  'payout'=実質手取り（手�
 function $m(n){ return parseInt(String(n).replace(/[^\d]/g,''))||0; }
 function $mabs(n){ const v=String(n||'').replace(/[^\d]/g,''); return parseInt(v)||0; }
 function normStore(n){
-  if(!n) return '不明';
-  if(n.includes('五反田')) return '五反田';
-  if(n.includes('恵比寿')) return '恵比寿';
-  if(n.includes('武蔵小杉')) return '武蔵小杉';
-  return n;
+  if(!n||String(n).trim()==='') return '不明';
+  let s = String(n).trim();
+  // 「レンタルサロン hump 五反田店」→「五反田」のように、末尾の「店」を除去し
+  // よく知られたキーワードで店舗名を抽出する
+  // まず末尾の「店」を除去
+  s = s.replace(/店$/, '');
+  // 「レンタルサロン hump 〇〇」形式の場合、最後のスペース区切りトークンを店舗名とする
+  if(s.includes(' ')){
+    const parts = s.split(/[\s　]+/);
+    s = parts[parts.length - 1];
+  }
+  return s || '不明';
 }
 function parseDate(s){
   if(!s) return null;
@@ -684,11 +986,11 @@ function onFiles(input, hint){
       if(!hasJP || hasMojibake){
         parseFileWithEncoding(file, 'Shift_JIS', hint, (res2)=>{
           processParseResult(res2, hint, file.name);
-          if(--pending===0){ input.value=''; rebuild(); }
+          if(--pending===0){ input.value=''; rebuild(); saveSalesData(); }
         });
       } else {
         processParseResult(res, hint, file.name);
-        if(--pending===0){ input.value=''; rebuild(); }
+        if(--pending===0){ input.value=''; rebuild(); saveSalesData(); }
       }
     });
   });
@@ -773,6 +1075,8 @@ function processParseResult(res, hint, fileName){
     REC_CNT[fmt]=(REC_CNT[fmt]||0)+parsed.length;
     updateUploadUI(fmt, null);
     console.log(`[${fmt}] ${fileName}: ${dataRows.length-1}行 → ${parsed.length}件 パース完了`);
+    // 売上データを自動保存（rebuild後に呼ぶとALLが確定している）
+    // rebuild は onFiles 側で呼ばれるのでここでは saveSalesData のみ
   }catch(e){
     console.error(e);
     updateUploadUI(hint, e.message+' ('+fileName+')');
@@ -810,6 +1114,7 @@ function clearPlat(hint, platName){
   document.getElementById('fc-'+hint).style.display='none';
   document.getElementById('cl-'+hint).style.display='none';
   rebuild();
+  saveSalesData();
 }
 
 // ============================================================
@@ -864,7 +1169,8 @@ function setPeriod(p, btn){
 }
 
 function setStore(s, btn){
-  document.querySelectorAll('.gfilter .gf-group:last-child .tbtn').forEach(b=>b.classList.remove('active'));
+  // store-filter-btns 内のボタンのみ対象（他タブのtbtnに影響しないよう限定）
+  document.querySelectorAll('#store-filter-btns .tbtn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   FILTER.store=s;
   rebuild();
@@ -916,6 +1222,8 @@ function rebuild(){
   }
   document.getElementById('dashboard').style.display='block';
   document.getElementById('empty-state').style.display='none';
+  // 案B: 店舗メタを動的再構築
+  rebuildStoreMeta();
   if(FILTER.month){ renderMonthPills(); }
 
   const done=getFiltered('completed');
@@ -953,6 +1261,28 @@ function rebuild(){
   drawFeeDetailTable(done);
   drawIssues(done, allF);
   renderTable();
+  drawKPIWithExp();
+  // 利益分析・経費分析タブも常に最新フィルターで再描画
+  drawProfit();
+  drawExpTrend();
+  // 店舗1店選択時は店舗比較系セクションを非表示
+  applyStoreSingleMode();
+}
+
+// 店舗フィルターが1店舗選択の場合、比較系UIを非表示にする
+function applyStoreSingleMode(){
+  const isSingle = FILTER.store !== 'all';
+  const hideIds = [
+    'store-breakdown-label','store-breakdown-grid', // 概要: 店舗別内訳
+    'store-rev-card',                               // 概要: 店舗別売上チャート
+    'store-profit-chart-card',                      // 利益分析: 店舗別利益ランキングチャート
+    'store-profit-detail-section',                  // 利益分析: 店舗別利益詳細カード
+    'bep-section',                                  // 利益分析: 損益分岐点
+  ];
+  hideIds.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display = isSingle ? 'none' : '';
+  });
 }
 
 // ============================================================
@@ -968,13 +1298,23 @@ function drawKPI(done, allF){
   const avgDur=durs.length>0?durs.reduce((s,d)=>s+d,0)/durs.length:0;
   const cm={}; done.forEach(b=>{cm[b.customer]=(cm[b.customer]||0)+1;});
   const regs=Object.values(cm).filter(c=>c>=2).length;
+
+  // 全期間選択時は月数で割って月平均を表示
+  const isAll = !FILTER.month;
+  const nMonths = isAll ? new Set(done.map(b=>b.useDate?ym(b.useDate):null).filter(Boolean)).size || 1 : 1;
+  const nMonthsAll = isAll ? new Set(allF.map(b=>b.useDate?ym(b.useDate):null).filter(Boolean)).size || 1 : 1;
+  const avgLabel = isAll ? '月平均' : '';
+
+  const fv = (v, n) => isAll ? fc(Math.round(v/n)) : fc(v); // 金額フォーマット（全期間時は平均）
+  const cv = (v, n) => isAll ? Math.round(v/n*10)/10+'件' : v+'件'; // 件数（全期間時は平均）
+
   document.getElementById('kpi-main').innerHTML=[
-    ['総売上（税込）',fc(tg),`実質手取り ${fc(tp)}`],
-    ['確定予約件数',done.length+'件',`全体 ${allF.length}件`],
-    ['ユニーク顧客数',uq+'名',`常連(2回+) ${regs}名`],
-    ['キャンセル率',cr+'%',`${canCnt}件キャンセル`],
-    ['平均利用時間',avgDur.toFixed(1)+'h',`${durs.length}件よりデータ`],
-    ['平均予約単価',done.length>0?fc(tg/done.length):'¥0',`手取均 ${done.length>0?fc(tp/done.length):'¥0'}`],
+    [isAll?'月平均売上（税込）':'総売上（税込）', fv(tg,nMonths), isAll?`月平均手取り ${fv(tp,nMonths)}`:`実質手取り ${fc(tp)}`],
+    [isAll?'月平均確定予約':'確定予約件数',   cv(done.length,nMonths), isAll?`月平均 全体 ${Math.round(allF.length/nMonthsAll*10)/10}件`:`全体 ${allF.length}件`],
+    ['ユニーク顧客数', uq+'名', `常連(2回+) ${regs}名`],
+    ['キャンセル率', cr+'%', `${canCnt}件キャンセル`],
+    ['平均利用時間', avgDur.toFixed(1)+'h', `${durs.length}件よりデータ`],
+    ['平均予約単価', done.length>0?fc(tg/done.length):'¥0', `手取均 ${done.length>0?fc(tp/done.length):'¥0'}`],
   ].map(([l,v,s])=>`<div class="kpi"><div class="kpi-l">${l}</div><div class="kpi-v">${v}</div><div class="kpi-s">${s}</div></div>`).join('');
 }
 
@@ -1483,6 +1823,7 @@ function drawAvgDur(done){
 //  PLATFORM TAB
 // ============================================================
 function drawPlatKPI(done, allF){
+  const isAll = !FILTER.month;
   const active=PLATFORMS.filter(p=>allF.some(b=>b.platform===p));
   document.getElementById('kpi-plat').innerHTML=active.map(p=>{
     const pb=done.filter(b=>b.platform===p);
@@ -1491,11 +1832,16 @@ function drawPlatKPI(done, allF){
     const tp=pb.reduce((s,b)=>s+b.payout,0);
     const cr=ab.length>0?(ab.filter(b=>b.status==='cancelled').length/ab.length*100).toFixed(1):0;
     const comm=tg>0?((1-tp/tg)*100).toFixed(1):0;
-    const fincodeNote=p==='よやクル'?`<div style="font-size:.65rem;color:#c2410c;margin-top:2px">うちfincode手数料 ${fc(pb.reduce((s,b)=>s+b.fincodeFee,0))}</div>`:'';
+    // 全期間時は月平均
+    const nM = isAll ? new Set(pb.map(b=>b.useDate?ym(b.useDate):null).filter(Boolean)).size||1 : 1;
+    const dispGross = isAll ? fc(Math.round(tg/nM)) : fc(tg);
+    const dispLabel = isAll ? `月平均売上` : `売上合計`;
+    const fincodeTotal=pb.reduce((s,b)=>s+b.fincodeFee,0);
+    const fincodeNote=p==='よやクル'?`<div style="font-size:.65rem;color:#c2410c;margin-top:2px">${isAll?'月平均':''}fincode手数料 ${isAll?fc(Math.round(fincodeTotal/nM)):fc(fincodeTotal)}</div>`:'';
     return `<div class="kpi" style="border-top:4px solid ${PC[p]}">
       <div class="kpi-l" style="color:${PC[p]}">${p}</div>
-      <div class="kpi-v" style="font-size:1.1rem">${fc(tg)}</div>
-      <div class="kpi-s">${pb.length}件 | キャンセル率 ${cr}% | 実効手数料率 ${comm}%</div>
+      <div class="kpi-v" style="font-size:1.1rem">${dispGross}</div>
+      <div class="kpi-s">${isAll?`月平均 ${Math.round(pb.length/nM*10)/10}件`:pb.length+'件'} | キャンセル率 ${cr}% | 実効手数料率 ${comm}%</div>
       ${fincodeNote}
     </div>`;
   }).join('');
@@ -1866,7 +2212,11 @@ function renderTable(){
   const stF=document.getElementById('df-status')?.value||'';
   const q=(document.getElementById('df-q')?.value||'').toLowerCase();
   const pb={'スペースマーケット':'b-sm','インスタベース':'b-ib','よやクル':'b-yk'};
-  const sb={'五反田':'b-gt','恵比寿':'b-eb','武蔵小杉':'b-mk'};
+  // 店舗バッジは動的に生成（固定色ではなくインラインスタイルで対応）
+  const getStoreBadge=(store)=>{
+    const col = SC[store]||'#6b7280';
+    return `<span class="badge" style="background:${col}22;color:${col};border:1px solid ${col}44">${store}</span>`;
+  };
 
   let rows=getFiltered('any').filter(b=>{
     if(plF&&b.platform!==plF) return false;
@@ -1879,7 +2229,7 @@ function renderTable(){
     <tr>
       <td>${fd(b.useDate)}</td>
       <td><span class="badge ${pb[b.platform]||'b-sm'}">${PLAT_SHORT[b.platform]||b.platform}</span></td>
-      <td><span class="badge ${sb[b.store]||'b-gt'}">${b.store}</span></td>
+      <td>${getStoreBadge(b.store)}</td>
       <td>${b.customer}</td>
       <td>${b.duration?b.duration+'h':'-'}</td>
       <td style="font-weight:600">${fc(b.gross)}</td>
@@ -1904,10 +2254,884 @@ function renderTable(){
 //  TAB SWITCHING
 // ============================================================
 function switchTab(el){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tc').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('tab-'+el.dataset.tab).classList.add('active');
+  const panel = document.getElementById('tab-'+el.dataset.tab);
+  if(panel) panel.classList.add('active');
+  if(el.dataset.tab==='expense') drawProfit();
+  if(el.dataset.tab==='exptrend') drawExpTrend();
+}
+
+// ============================================================
+//  EXPENSE PANEL TOGGLE (B-plan: top area)
+// ============================================================
+function toggleExpPanel(){
+  const panel = document.getElementById('exp-panel');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  const btn = document.querySelector('#up-exp .btn-add');
+  if(btn) btn.textContent = isOpen ? '▼ 開いて編集' : '▲ 閉じる';
+  if(!isOpen){
+    // 売上CSVが未ロードの場合は注意書きを表示
+    const noStoresNotice = document.getElementById('exp-no-stores-notice');
+    if(noStoresNotice) noStoresNotice.style.display = STORES.length===0 ? 'block' : 'none';
+    initExpSelectors();
+  }
+}
+
+function updateExpCardStatus(){
+  const totalMonths = Object.keys(EXP_DATA).length;
+  const totalItems  = Object.values(EXP_DATA).reduce((s,d)=>s+(d.store||[]).length+(d.common||[]).length,0);
+  const st = document.getElementById('st-exp');
+  const sub= document.getElementById('exp-card-status');
+  if(totalItems>0){
+    if(st){ st.textContent=`✓ ${totalMonths}ヶ月 / ${totalItems}件入力済み`; st.style.color='#059669'; }
+    if(sub) sub.textContent='クリックして編集';
+    const card=document.getElementById('up-exp');
+    if(card){ card.style.borderColor='#10b981'; card.style.background='#f0fdf4'; }
+    const title=card?.querySelector('.up-title');
+    if(title) title.style.color='#059669';
+  } else {
+    if(st){ st.textContent='未入力'; st.style.color='#667eea'; }
+  }
+}
+
+// ============================================================
+//  EXPENSE STATE & STORAGE
+// ============================================================
+// EXP_DATA: { 'YYYY-MM': { store: [{cat,name,amount}], common: [{cat,name,amount}] } }
+let EXP_DATA = {};
+const EXP_STORE_KEY = 'humpExpV1';
+const EXP_CATS_STORE  = ['家賃','光熱費','消耗品','広告費','人件費','修繕費','その他'];
+const EXP_CATS_COMMON = ['広告費','会計ソフト','通信費','システム費','その他'];
+const ALLOC_MODE = {v:'total'}; // 'total' or 'split'
+
+function loadExpData(){
+  try{ const s=localStorage.getItem(EXP_STORE_KEY); if(s) EXP_DATA=JSON.parse(s); }catch(e){ EXP_DATA={}; }
+}
+function saveExpData(){
+  try{ localStorage.setItem(EXP_STORE_KEY, JSON.stringify(EXP_DATA)); }catch(e){}
+}
+loadExpData();
+// Update expense card status on load
+document.addEventListener('DOMContentLoaded', updateExpCardStatus);
+
+// ============================================================
+//  SALES DATA LOCALSTORAGE (自動保存)
+// ============================================================
+const SALES_STORE_KEY = 'humpSalesV1';
+
+function saveSalesData(){
+  // ALLをそのまま保存すると大きいので、必要なフィールドのみ
+  try{
+    // DateオブジェクトはJSON化できないので文字列化
+    const serialized = ALL.map(b=>({
+      ...b,
+      bookDate: b.bookDate? b.bookDate.toISOString() : null,
+      useDate:  b.useDate?  b.useDate.toISOString()  : null,
+    }));
+    localStorage.setItem(SALES_STORE_KEY, JSON.stringify({
+      all: serialized,
+      seen: [...SEEN],
+      fileCnt: FILE_CNT,
+      recCnt: REC_CNT,
+    }));
+  }catch(e){ console.warn('売上データの保存に失敗:', e); }
+}
+
+function loadSalesData(){
+  try{
+    const raw = localStorage.getItem(SALES_STORE_KEY);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    // Dateを復元
+    ALL = (saved.all||[]).map(b=>({
+      ...b,
+      bookDate: b.bookDate? new Date(b.bookDate) : null,
+      useDate:  b.useDate?  new Date(b.useDate)  : null,
+    }));
+    SEEN = new Set(saved.seen||[]);
+    FILE_CNT = saved.fileCnt || {sm:0,ib:0,yk:0};
+    REC_CNT  = saved.recCnt  || {sm:0,ib:0,yk:0};
+    // UIを復元
+    ['sm','ib','yk'].forEach(fmt=>{
+      if((FILE_CNT[fmt]||0)>0) updateUploadUI(fmt, null);
+    });
+    if(ALL.length>0) rebuild();
+  }catch(e){ console.warn('売上データの読み込みに失敗:', e); ALL=[]; }
+}
+
+document.addEventListener('DOMContentLoaded', loadSalesData);
+
+// スマホの向き変更時にチャートを再描画してレイアウト崩れを防ぐ
+window.addEventListener('orientationchange', ()=>{
+  setTimeout(()=>{ if(ALL.length>0) rebuild(); }, 300);
+});
+// resize でも対応（iOS Safari対策）
+let _resizeTimer;
+window.addEventListener('resize', ()=>{
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(()=>{ if(ALL.length>0) rebuild(); }, 250);
+});
+
+function setAlloc(v, btn){
+  ALLOC_MODE.v = v;
+  document.querySelectorAll('#alloc-toggle .tbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  drawProfit();
+}
+
+// ============================================================
+//  EXPENSE PERIOD SELECTORS
+// ============================================================
+function getAvailableMonths(){
+  // Months from sales data + months in EXP_DATA, merged and sorted
+  const s=new Set();
+  ALL.forEach(b=>{ if(b.useDate) s.add(ym(b.useDate)); });
+  Object.keys(EXP_DATA).forEach(m=>s.add(m));
+  // Also generate a reasonable range around today
+  const now=new Date();
+  for(let i=-3;i<=3;i++){
+    const d=new Date(now.getFullYear(), now.getMonth()+i, 1);
+    s.add(ym(d));
+  }
+  return [...s].sort();
+}
+
+function initExpSelectors(){
+  const months = getAvailableMonths();
+  const fromSel = document.getElementById('exp-from');
+  const toSel   = document.getElementById('exp-to');
+  if(!fromSel||!toSel) return;
+  const curFrom = fromSel.value;
+  const curTo   = toSel.value;
+  const opts = months.map(m=>`<option value="${m}">${ymLabel(m)}</option>`).join('');
+  fromSel.innerHTML = opts;
+  toSel.innerHTML   = opts;
+  // デフォルト: 「1ヶ月前〜6ヶ月分」（今が5月なら4月〜9月）
+  if(!curFrom||!months.includes(curFrom)){
+    const now = new Date();
+    const defaultFrom = ym(new Date(now.getFullYear(), now.getMonth()-1, 1));
+    fromSel.value = months.includes(defaultFrom) ? defaultFrom : months[Math.max(0,months.length-6)];
+  } else { fromSel.value=curFrom; }
+  if(!curTo||!months.includes(curTo)){
+    const now = new Date();
+    const defaultTo = ym(new Date(now.getFullYear(), now.getMonth()+4, 1)); // 1ヶ月前から数えて6ヶ月後
+    toSel.value = months.includes(defaultTo) ? defaultTo : months[months.length-1];
+  } else { toSel.value=curTo; }
+  renderExpMonthBlocks();
+}
+
+function getExpRange(){
+  const from = document.getElementById('exp-from')?.value||'';
+  const to   = document.getElementById('exp-to')?.value||'';
+  const all  = getAvailableMonths();
+  if(!from||!to) return all;
+  return all.filter(m=>m>=from&&m<=to);
+}
+
+function renderExpMonthBlocks(){
+  const range = getExpRange();
+  const hintEl = document.getElementById('exp-period-hint');
+  if(hintEl) hintEl.textContent = `→ ${range.length}ヶ月分`;
+  const container = document.getElementById('exp-month-blocks');
+  if(!container) return;
+  container.innerHTML = range.map(m=>buildMonthBlock(m)).join('');
+  // Open first block by default
+  if(range.length>0){
+    const first = container.querySelector('.month-body');
+    if(first) first.classList.add('open');
+    const firstArrow = container.querySelector('.month-arrow');
+    if(firstArrow) firstArrow.textContent='▼';
+  }
+}
+
+function buildMonthBlock(m){
+  const d = EXP_DATA[m]||{store:[],common:[]};
+  const storeRows = (d.store||[]);
+  const commonRows = (d.common||[]);
+  const totalStore = storeRows.reduce((s,r)=>s+(+r.amount||0),0);
+  const totalCommon = commonRows.reduce((s,r)=>s+(+r.amount||0),0);
+  const total = totalStore + totalCommon;
+  const countStr = `店舗別 ${storeRows.length}件 ／ 共通 ${commonRows.length}件`;
+
+  // Store rows HTML
+  const storeRowsHtml = storeRows.map((r,i)=>`
+    <div class="exp-row exp-row-store" id="sr-${m}-${i}">
+      <select class="exp-select" data-m="${m}" data-t="store" data-i="${i}" data-f="store" onchange="updateExpRow(this)">
+        ${storeOpts(r.store)}
+      </select>
+      <select class="exp-select" data-m="${m}" data-t="store" data-i="${i}" data-f="cat" onchange="updateExpRow(this)">
+        ${EXP_CATS_STORE.map(c=>`<option${r.cat===c?' selected':''}>${c}</option>`).join('')}
+      </select>
+      <input class="exp-input" type="text" value="${r.name||''}" placeholder="科目名" data-m="${m}" data-t="store" data-i="${i}" data-f="name" oninput="updateExpRow(this)">
+      <input class="exp-input" type="number" value="${r.amount||''}" placeholder="金額" data-m="${m}" data-t="store" data-i="${i}" data-f="amount" oninput="updateExpRow(this);updateBlockTotal('${m}')">
+      <button class="btn-pin" onclick="openPinPopup('${m}','store',${i})">固定費登録</button>
+      <button class="btn-exp-del" onclick="delExpRow('${m}','store',${i})">×</button>
+    </div>`).join('');
+
+  const commonRowsHtml = commonRows.map((r,i)=>`
+    <div class="exp-row exp-row-common" id="cr-${m}-${i}">
+      <select class="exp-select" data-m="${m}" data-t="common" data-i="${i}" data-f="cat" onchange="updateExpRow(this)">
+        ${EXP_CATS_COMMON.map(c=>`<option${r.cat===c?' selected':''}>${c}</option>`).join('')}
+      </select>
+      <input class="exp-input" type="text" value="${r.name||''}" placeholder="科目名" data-m="${m}" data-t="common" data-i="${i}" data-f="name" oninput="updateExpRow(this)">
+      <input class="exp-input" type="number" value="${r.amount||''}" placeholder="金額" data-m="${m}" data-t="common" data-i="${i}" data-f="amount" oninput="updateExpRow(this);updateBlockTotal('${m}')">
+      <button class="btn-pin" onclick="openPinPopup('${m}','common',${i})">固定費登録</button>
+      <button class="btn-exp-del" onclick="delExpRow('${m}','common',${i})">×</button>
+    </div>`).join('');
+
+  return `<div class="month-block" id="mblock-${m}">
+    <div class="month-hdr" onclick="toggleMonthBlock('${m}')">
+      <span class="month-arrow">▶</span>
+      <span>${ymLabel(m)}</span>
+      <span style="font-size:.7rem;color:#9ca3af;margin-left:4px">${countStr}</span>
+      <span id="mblock-total-${m}" style="margin-left:auto;font-size:.78rem;font-weight:700;color:#374151">${total>0?'合計 '+fc(total):''}</span>
+    </div>
+    <div class="month-body" id="mbody-${m}">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+        <button class="btn-exp-add" onclick="applyFixedToMonth('${m}')" style="font-size:.7rem;padding:3px 10px">📌 固定費を取り込む</button>
+      </div>
+      <div style="font-size:.72rem;font-weight:700;color:#374151;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span class="tag-store-badge">店舗別</span></div>
+      <div class="exp-row exp-row-store" style="margin-bottom:3px">
+        <span class="exp-col-hdr">店舗</span><span class="exp-col-hdr">カテゴリ</span><span class="exp-col-hdr">科目名</span><span class="exp-col-hdr">金額（円）</span><span></span><span></span>
+      </div>
+      <div id="store-rows-${m}">${storeRowsHtml}</div>
+      <button class="btn-exp-add" onclick="addExpRow('${m}','store')">＋ 店舗別を追加</button>
+      <div class="exp-divider"></div>
+      <div style="font-size:.72rem;font-weight:700;color:#374151;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span class="tag-common-badge">共通</span></div>
+      <div class="exp-row exp-row-common" style="margin-bottom:3px">
+        <span class="exp-col-hdr">カテゴリ</span><span class="exp-col-hdr">科目名</span><span class="exp-col-hdr">金額（円）</span><span></span><span></span>
+      </div>
+      <div id="common-rows-${m}">${commonRowsHtml}</div>
+      <button class="btn-exp-add" onclick="addExpRow('${m}','common')">＋ 共通を追加</button>
+    </div>
+  </div>`;
+}
+
+function toggleMonthBlock(m){
+  const body  = document.getElementById('mbody-'+m);
+  const arrow = document.querySelector(`#mblock-${m} .month-arrow`);
+  if(!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open');
+  if(arrow) arrow.textContent = isOpen?'▶':'▼';
+}
+
+function updateBlockTotal(m){
+  const d = EXP_DATA[m]||{store:[],common:[]};
+  const total = [...(d.store||[]),...(d.common||[])].reduce((s,r)=>s+(+r.amount||0),0);
+  const el = document.getElementById('mblock-total-'+m);
+  if(el) el.textContent = total>0?'合計 '+fc(total):'';
+}
+
+function storeOpts(selected){
+  if(STORES.length===0) return `<option value="">（売上CSVを先に読み込んでください）</option>`;
+  return STORES.map(s=>`<option${s===selected?' selected':''}>${s}</option>`).join('');
+}
+
+function addExpRow(m, type){
+  if(!EXP_DATA[m]) EXP_DATA[m]={store:[],common:[]};
+  if(!EXP_DATA[m][type]) EXP_DATA[m][type]=[];
+  const newRow = type==='store'
+    ? {store:STORES[0]||'', cat:EXP_CATS_STORE[0], name:'', amount:0}
+    : {cat:EXP_CATS_COMMON[0], name:'', amount:0};
+  EXP_DATA[m][type].push(newRow);
+  rerenderRows(m, type);
+  saveExpData();
+}
+
+function delExpRow(m, type, i){
+  if(!EXP_DATA[m]||!EXP_DATA[m][type]) return;
+  EXP_DATA[m][type].splice(i,1);
+  rerenderRows(m, type);
+  updateBlockTotal(m);
+  saveExpData();
+  // Immediately reflect in all charts
+  drawProfit();
+  drawExpTrend();
+  drawKPIWithExp();
+}
+
+function updateExpRow(el){
+  const {m,t,i,f} = el.dataset;
+  if(!EXP_DATA[m]||!EXP_DATA[m][t]||!EXP_DATA[m][t][+i]) return;
+  EXP_DATA[m][t][+i][f] = f==='amount'? +el.value : el.value;
+  saveExpData();
+}
+
+function rerenderRows(m, type){
+  const container = document.getElementById((type==='store'?'store':'common')+'-rows-'+m);
+  if(!container) return;
+  const rows = (EXP_DATA[m]||{})[type]||[];
+  if(type==='store'){
+    container.innerHTML = rows.map((r,i)=>`
+      <div class="exp-row exp-row-store">
+        <select class="exp-select" data-m="${m}" data-t="store" data-i="${i}" data-f="store" onchange="updateExpRow(this)">
+          ${storeOpts(r.store)}
+        </select>
+        <select class="exp-select" data-m="${m}" data-t="store" data-i="${i}" data-f="cat" onchange="updateExpRow(this)">
+          ${EXP_CATS_STORE.map(c=>`<option${r.cat===c?' selected':''}>${c}</option>`).join('')}
+        </select>
+        <input class="exp-input" type="text" value="${r.name||''}" placeholder="科目名" data-m="${m}" data-t="store" data-i="${i}" data-f="name" oninput="updateExpRow(this)">
+        <input class="exp-input" type="number" value="${r.amount||''}" placeholder="金額" data-m="${m}" data-t="store" data-i="${i}" data-f="amount" oninput="updateExpRow(this);updateBlockTotal('${m}')">
+        <button class="btn-pin" onclick="openPinPopup('${m}','store',${i})">固定費登録</button>
+        <button class="btn-exp-del" onclick="delExpRow('${m}','store',${i})">×</button>
+      </div>`).join('');
+  } else {
+    container.innerHTML = rows.map((r,i)=>`
+      <div class="exp-row exp-row-common">
+        <select class="exp-select" data-m="${m}" data-t="common" data-i="${i}" data-f="cat" onchange="updateExpRow(this)">
+          ${EXP_CATS_COMMON.map(c=>`<option${r.cat===c?' selected':''}>${c}</option>`).join('')}
+        </select>
+        <input class="exp-input" type="text" value="${r.name||''}" placeholder="科目名" data-m="${m}" data-t="common" data-i="${i}" data-f="name" oninput="updateExpRow(this)">
+        <input class="exp-input" type="number" value="${r.amount||''}" placeholder="金額" data-m="${m}" data-t="common" data-i="${i}" data-f="amount" oninput="updateExpRow(this);updateBlockTotal('${m}')">
+        <button class="btn-pin" onclick="openPinPopup('${m}','common',${i})">固定費登録</button>
+        <button class="btn-exp-del" onclick="delExpRow('${m}','common',${i})">×</button>
+      </div>`).join('');
+  }
+}
+
+function saveAllExp(){
+  saveExpData();
+  updateExpCardStatus();
+  drawProfit();
+  drawExpTrend();
+  drawKPIWithExp();
+  alert('経費データを保存しました。');
+}
+
+function showClearAllExpConfirm(){
+  document.getElementById('clear-exp-popup').style.display='flex';
+}
+
+function execClearAllExp(){
+  EXP_DATA = {};
+  saveExpData();
+  document.getElementById('clear-exp-popup').style.display='none';
+  updateExpCardStatus();
+  renderExpMonthBlocks();
+  drawProfit();
+  drawExpTrend();
+  drawKPIWithExp();
+}
+
+// ============================================================
+//  FIXED EXPENSE (PIN) POPUP
+// ============================================================
+let PIN_CTX = null; // {m, type, idx}
+
+function openPinPopup(m, type, idx){
+  PIN_CTX = {m, type, idx};
+  const row = (EXP_DATA[m]||{})[type]?.[idx];
+  if(!row) return;
+  const label = type==='store'
+    ? `${row.store||''} ／ ${row.cat||''} ／ ${row.name||'（未入力）'} ／ ${fc(+row.amount||0)}`
+    : `共通 ／ ${row.cat||''} ／ ${row.name||'（未入力）'} ／ ${fc(+row.amount||0)}`;
+  document.getElementById('pin-popup-sub').textContent = `「${label}」を指定した期間の全月に追加します。`;
+
+  // Populate selectors
+  const months = getAvailableMonths();
+  const opts   = months.map(mo=>`<option value="${mo}">${ymLabel(mo)}</option>`).join('');
+  document.getElementById('pin-from').innerHTML = opts;
+  document.getElementById('pin-to').innerHTML   = opts;
+  document.getElementById('pin-from').value = m;
+  document.getElementById('pin-to').value   = months[months.length-1];
+
+  updatePinPreview();
+  document.getElementById('pin-popup').style.display='flex';
+}
+
+function closePinPopup(){
+  document.getElementById('pin-popup').style.display='none';
+  PIN_CTX=null;
+}
+
+function updatePinPreview(){
+  if(!PIN_CTX) return;
+  const from = document.getElementById('pin-from').value;
+  const to   = document.getElementById('pin-to').value;
+  const all  = getAvailableMonths();
+  const range = all.filter(m=>m>=from&&m<=to);
+  const row = (EXP_DATA[PIN_CTX.m]||{})[PIN_CTX.type]?.[PIN_CTX.idx];
+  const amt = row?(+row.amount||0):0;
+  document.getElementById('pin-preview').textContent =
+    `${ymLabel(from)} 〜 ${ymLabel(to)}（${range.length}ヶ月分）に ${fc(amt)} × ${range.length} = ${fc(amt*range.length)} を登録します`;
+}
+
+function execPinRegister(){
+  if(!PIN_CTX) return;
+  const from = document.getElementById('pin-from').value;
+  const to   = document.getElementById('pin-to').value;
+  const all  = getAvailableMonths();
+  const range = all.filter(m=>m>=from&&m<=to);
+  const srcRow = (EXP_DATA[PIN_CTX.m]||{})[PIN_CTX.type]?.[PIN_CTX.idx];
+  if(!srcRow) return;
+
+  range.forEach(m=>{
+    if(!EXP_DATA[m]) EXP_DATA[m]={store:[],common:[]};
+    if(!EXP_DATA[m][PIN_CTX.type]) EXP_DATA[m][PIN_CTX.type]=[];
+    // avoid exact duplicate (same name+store+amount)
+    const exists = EXP_DATA[m][PIN_CTX.type].some(r=>
+      r.name===srcRow.name && r.cat===srcRow.cat &&
+      (+r.amount||0)===(+srcRow.amount||0) &&
+      (PIN_CTX.type==='common'||r.store===srcRow.store)
+    );
+    if(!exists) EXP_DATA[m][PIN_CTX.type].push({...srcRow});
+  });
+  saveExpData();
+  closePinPopup();
+  renderExpMonthBlocks(); // re-render
+}
+
+function applyFixedToMonth(m){
+  // Collect all entries that appear in ≥2 months as "fixed" and add to this month
+  const counts={};
+  Object.entries(EXP_DATA).forEach(([mo, d])=>{
+    [...(d.store||[]),...(d.common||[])].forEach(r=>{
+      const key = (r.store||'common')+'|'+r.cat+'|'+r.name+'|'+r.amount;
+      counts[key]=(counts[key]||{cnt:0,row:r,type:d.store?.includes(r)?'store':'common'});
+      counts[key].cnt++;
+    });
+  });
+  // entries appearing in 2+ months = "fixed"
+  const fixed = Object.values(counts).filter(v=>v.cnt>=2);
+  if(!fixed.length){ alert('固定費として認識できる経費が見つかりませんでした。\n2ヶ月以上登録されている経費を自動検出します。'); return; }
+  if(!EXP_DATA[m]) EXP_DATA[m]={store:[],common:[]};
+  fixed.forEach(({row, type})=>{
+    if(!EXP_DATA[m][type]) EXP_DATA[m][type]=[];
+    const exists = EXP_DATA[m][type].some(r=>r.name===row.name&&r.cat===row.cat&&(+r.amount||0)===(+row.amount||0)&&r.store===row.store);
+    if(!exists) EXP_DATA[m][type].push({...row});
+  });
+  saveExpData();
+  renderExpMonthBlocks();
+}
+
+// ============================================================
+//  CSV NOTICE POPUP
+// ============================================================
+function showExpExportNotice(){
+  document.getElementById('csv-notice-title').textContent = '経費CSVの出力';
+  document.getElementById('csv-notice-body').innerHTML =
+    '・出力されるCSVは <strong>このツール専用のフォーマット</strong> です。<br>' +
+    '・このツールから出力したCSVのみ、再インポートが可能です。<br>' +
+    '・手動で編集した場合、正しく読み込めなくなる可能性があります。';
+  document.getElementById('csv-notice-ok').onclick = ()=>{ closeCsvNotice(); exportExpCsv(); };
+  document.getElementById('csv-notice-popup').style.display='flex';
+}
+
+function showExpImportNotice(){
+  document.getElementById('csv-notice-title').textContent = '経費CSVの読み込み';
+  document.getElementById('csv-notice-body').innerHTML =
+    '・読み込めるのは <strong>このツールから出力した経費CSVのみ</strong> です。<br>' +
+    '・他のツールで作成したCSVや、手動で編集したファイルは正しく読み込めない場合があります。<br>' +
+    '・読み込んだデータは <strong>既存データに追加</strong> されます（上書きではありません）。<br>' +
+    '・経費データはまずこのツール上で入力・保存し、「CSVで出力」でバックアップしてください。';
+  document.getElementById('csv-notice-ok').onclick = ()=>{ closeCsvNotice(); importExpCsv(); };
+  document.getElementById('csv-notice-popup').style.display='flex';
+}
+
+function closeCsvNotice(){
+  document.getElementById('csv-notice-popup').style.display='none';
+}
+
+function exportExpCsv(){
+  const rows=[['年月','種別','店舗','カテゴリ','科目名','金額']];
+  Object.entries(EXP_DATA).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([m,d])=>{
+    (d.store||[]).forEach(r=>rows.push([m,'店舗別',r.store||'',r.cat||'',r.name||'',r.amount||0]));
+    (d.common||[]).forEach(r=>rows.push([m,'共通','',r.cat||'',r.name||'',r.amount||0]));
+  });
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='hump_expenses.csv'; a.click();
+}
+
+function importExpCsv(){ document.getElementById('exp-csv-input').click(); }
+
+function onExpCsvFile(input){
+  const file=input.files[0]; if(!file) return;
+  file.arrayBuffer().then(buf=>{
+    const decoder=new TextDecoder('utf-8',{fatal:false});
+    const text=decoder.decode(buf).replace(/^\uFEFF/,'');
+    const rows=Papa.parse(text,{skipEmptyLines:'greedy'}).data;
+    rows.slice(1).forEach(r=>{
+      const [m,kind,store,cat,name,amount]=r;
+      if(!m||!kind) return;
+      if(!EXP_DATA[m]) EXP_DATA[m]={store:[],common:[]};
+      const type=kind==='店舗別'?'store':'common';
+      if(!EXP_DATA[m][type]) EXP_DATA[m][type]=[];
+      const entry=type==='store'
+        ?{store,cat,name,amount:+amount||0}
+        :{cat,name,amount:+amount||0};
+      EXP_DATA[m][type].push(entry);
+    });
+    saveExpData();
+    updateExpCardStatus();
+    initExpSelectors();
+    input.value='';
+  });
+}
+
+// ============================================================
+//  PROFIT ANALYSIS
+// ============================================================
+function getExpForMonth(m, storeFilter){
+  // storeFilter: 'all' or specific store name
+  const d=EXP_DATA[m]||{};
+  const allStoreRows = d.store||[];
+  const commonRows   = d.common||[];
+  // 店舗フィルター適用
+  const storeRows = (storeFilter&&storeFilter!=='all')
+    ? allStoreRows.filter(r=>r.store===storeFilter)
+    : allStoreRows;
+  // 共通経費: 均等割モードでない場合は全体として扱う（フィルターに関わらず全額返す）
+  // ただし概要KPIではフィルター店舗の経費のみ見せるため、共通は均等割で表示
+  const storeTotal  = storeRows.reduce((s,r)=>s+(+r.amount||0),0);
+  const commonTotal = commonRows.reduce((s,r)=>s+(+r.amount||0),0);
+  const byStore={};
+  STORES.forEach(s=>{ byStore[s]=allStoreRows.filter(r=>r.store===s).reduce((sum,r)=>sum+(+r.amount||0),0); });
+  // フィルター時の共通経費: 均等割（STORES.length で除算）
+  const commonForFilter = (storeFilter&&storeFilter!=='all'&&STORES.length>0)
+    ? Math.round(commonTotal/STORES.length)
+    : commonTotal;
+  const total = storeTotal + commonForFilter;
+  return {storeTotal, commonTotal, commonForFilter, total, byStore, raw:d};
+}
+
+function drawProfit(){
+  // ③ Use getFiltered so month/store filters apply
+  const done = getFiltered('completed');
+  const allocSplit = ALLOC_MODE.v==='split';
+
+  // Get months present in filtered done data AND expense data
+  // 経費は done の月のみ（選択期間に連動）
+  const monthSet = new Set();
+  done.forEach(b=>{ if(b.useDate) monthSet.add(ym(b.useDate)); });
+  // 経費のみ存在する月も含める（売上0でも経費は表示したい場合）
+  // ただし期間フィルターがある場合は done の月に限定
+  if(!FILTER.month){
+    // 全期間: 経費データのある月も追加
+    Object.keys(EXP_DATA).forEach(m=>monthSet.add(m));
+  }
+  const months = [...monthSet].sort();
+
+  // Build monthly data
+  // profit = payout - expense (payout already has PF fee + fincode deducted)
+  const sf = FILTER.store; // 'all' or specific store
+  const mdata = months.map(m=>{
+    const mDone = done.filter(b=>b.useDate&&ym(b.useDate)===m);
+    const gross  = mDone.reduce((s,b)=>s+b.gross,0);
+    const payout = mDone.reduce((s,b)=>s+b.payout,0);
+    const pfFee  = gross - payout;
+    const exp    = getExpForMonth(m, sf); // 店舗フィルター適用
+    const totalExp = exp.total;
+    const profit = payout - totalExp;
+    const profitRate = gross>0? Math.round(profit/gross*1000)/10 : 0;
+
+    // Store-level profit (for store cards/charts)
+    const storeProfit={};
+    STORES.forEach(s=>{
+      const sDone = mDone.filter(b=>b.store===s);
+      const sPayout = sDone.reduce((sum,b)=>sum+b.payout,0);
+      const sExp    = exp.byStore[s]||0;
+      const commonShare = allocSplit? Math.round(exp.commonTotal/STORES.length):0;
+      storeProfit[s] = sPayout - sExp - commonShare;
+    });
+
+    return {m, gross, payout, pfFee, exp:totalExp, expStore:exp.storeTotal, expCommon:exp.commonForFilter, profit, profitRate, storeProfit};
+  }).filter(d=>d.gross>0||d.exp>0);
+
+  if(!mdata.length){
+    document.getElementById('profit-kpi').innerHTML='<div class="profit-kpi"><div class="profit-kpi-l">データなし</div><div class="profit-kpi-v" style="font-size:1rem;color:#9ca3af">売上CSVと経費を入力してください</div></div>';
+    ['store-profit-cards','bep-cards','goal-cards','profit-table'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=''; });
+    return;
+  }
+
+  const totalGross  = mdata.reduce((s,d)=>s+d.gross,0);
+  const totalPayout = mdata.reduce((s,d)=>s+d.payout,0);
+  const totalPfFee  = mdata.reduce((s,d)=>s+d.pfFee,0);
+  const totalExp    = mdata.reduce((s,d)=>s+d.exp,0);
+  const totalProfit = totalPayout - totalExp;
+  const avgRate     = totalGross>0? Math.round(totalProfit/totalGross*1000)/10:0;
+
+  const latestIdx   = mdata.length-1;
+  const momProfit   = mdata.length>=2? mdata[latestIdx].profit-mdata[latestIdx-1].profit : null;
+  const momStr      = momProfit!==null?(momProfit>=0?'前月比 ＋':'前月比 ')+fc(Math.abs(momProfit)):'';
+
+  const goalRate = +document.getElementById('goal-rate')?.value||0;
+  const sf2label = sf!=='all'?`${sf}のみ`:`全店舗`;
+  const periodLabel = mdata.length===1 ? ymLabel(mdata[0].m) : `${ymLabel(mdata[0].m)}〜${ymLabel(mdata[mdata.length-1].m)}`;
+
+  // KPI cards — 選択期間の合計を表示（「直近月」廃止 → 期間合計に統一）
+  const kpiItems=[
+    ['総売上（税込）', fc(totalGross), `${periodLabel} / ${sf2label}`, false],
+    ['PF手数料合計',  fc(totalPfFee),  `売上の${totalGross>0?Math.round(totalPfFee/totalGross*100):0}%`, true],
+    ['総経費',        fc(totalExp),    sf!=='all'?`${sf}の経費（共通は均等割）`:`店舗別＋共通合計`, true],
+    ['営業利益',      fc(totalProfit), momStr, totalProfit<0],
+    ['平均利益率',    avgRate+'%',     `目標${goalRate?goalRate+'%':'未設定'}`, goalRate>0&&avgRate<goalRate],
+  ];
+  document.getElementById('profit-kpi').innerHTML=kpiItems.map(([l,v,s,neg])=>
+    `<div class="profit-kpi"><div class="profit-kpi-l">${l}</div><div class="profit-kpi-v${neg?' neg':(!neg&&(l.includes('利益')||l.includes('手取')))?' pos':''}">${v}</div><div class="profit-kpi-s">${s}</div></div>`
+  ).join('');
+
+  // Chart: monthly trend — gross / pfFee / expense / profit (all separate bars for clarity)
+  mkChart('c-profit-trend',{
+    type:'bar',
+    data:{
+      labels:mdata.map(d=>ymLabel(d.m)),
+      datasets:[
+        {label:'売上（税込）',  data:mdata.map(d=>d.gross),  backgroundColor:'rgba(102,126,234,.3)',borderRadius:3},
+        {label:'PF手数料',      data:mdata.map(d=>d.pfFee),  backgroundColor:'rgba(245,158,11,.6)',borderRadius:3},
+        {label:'経費',          data:mdata.map(d=>d.exp),    backgroundColor:'rgba(239,68,68,.55)',borderRadius:3},
+        {label:'営業利益',      data:mdata.map(d=>d.profit), backgroundColor:mdata.map(d=>d.profit>=0?'rgba(16,185,129,.75)':'rgba(239,68,68,.75)'),borderRadius:3},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{y:{ticks:{callback:v=>'¥'+v.toLocaleString()}}}}
+  });
+
+  // Chart: profit rate trend
+  mkChart('c-profit-rate',{
+    type:'line',
+    data:{
+      labels:mdata.map(d=>ymLabel(d.m)),
+      datasets:[
+        {label:'利益率(%)',data:mdata.map(d=>d.profitRate),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',fill:true,tension:.35,pointRadius:4},
+        ...(goalRate?[{label:'目標',data:mdata.map(()=>goalRate),borderColor:'#f97316',borderDash:[4,4],pointRadius:0}]:[]),
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{y:{ticks:{callback:v=>v+'%'},suggestedMin:0}}}
+  });
+
+  // Store-level aggregates for chart + cards
+  const storeGross  = STORES.map(s=>mdata.reduce((sum,d)=>sum+(done.filter(b=>b.useDate&&ym(b.useDate)===d.m&&b.store===s).reduce((ss,b)=>ss+b.gross,0)),0));
+  const storePayout = STORES.map(s=>mdata.reduce((sum,d)=>sum+(done.filter(b=>b.useDate&&ym(b.useDate)===d.m&&b.store===s).reduce((ss,b)=>ss+b.payout,0)),0));
+  const storeExpOwn = STORES.map(s=>mdata.reduce((sum,d)=>sum+((EXP_DATA[d.m]?.store||[]).filter(r=>r.store===s).reduce((ss,r)=>ss+(+r.amount||0),0)),0));
+  const nStores = STORES.length||1;
+  const storeComShr = allocSplit? STORES.map(()=>mdata.reduce((sum,d)=>sum+Math.round(d.expCommon/nStores),0)):STORES.map(()=>0);
+  const storeProfits= STORES.map((s,i)=>storePayout[i]-storeExpOwn[i]-storeComShr[i]);
+
+  mkChart('c-store-profit',{
+    type:'bar',
+    data:{labels:STORES,datasets:[{label:'営業利益',data:storeProfits,backgroundColor:storeProfits.map(v=>v>=0?'rgba(16,185,129,.7)':'rgba(239,68,68,.7)'),borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{callback:v=>'¥'+v.toLocaleString()}}}}
+  });
+
+  // Store profit cards (ranked)
+  const storeRanked=STORES.map((s,i)=>({s,gross:storeGross[i],payout:storePayout[i],exp:storeExpOwn[i]+storeComShr[i],profit:storeProfits[i],rate:storeGross[i]>0?Math.round(storeProfits[i]/storeGross[i]*1000)/10:0}))
+    .sort((a,b)=>b.profit-a.profit);
+  const rankLabel=['🥇','🥈','🥉'];
+  document.getElementById('store-profit-cards').innerHTML=storeRanked.map((d,ri)=>{
+    const col=d.profit>=0?'#059669':'#dc2626';
+    return `<div class="store-profit-card">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #f3f4f6">
+        <div style="width:10px;height:10px;border-radius:50%;background:${SC[d.s]}"></div>
+        <span style="font-weight:700;font-size:.9rem">${d.s}</span>
+        <span style="font-size:1rem;margin-left:2px">${rankLabel[ri]||''}</span>
+      </div>
+      <div class="mini-stats">
+        <div class="mini-stat"><div class="mini-stat-l">売上（税込）</div><div class="mini-stat-v">${fc(d.gross)}</div></div>
+        <div class="mini-stat"><div class="mini-stat-l">手取り</div><div class="mini-stat-v">${fc(d.payout)}</div></div>
+        <div class="mini-stat"><div class="mini-stat-l">経費${allocSplit?'(均等割込)':''}</div><div class="mini-stat-v">${fc(d.exp)}</div></div>
+        <div class="mini-stat"><div class="mini-stat-l">利益率</div><div class="mini-stat-v" style="color:${col}">${d.rate}%</div></div>
+        <div class="mini-stat" style="grid-column:1/-1"><div class="mini-stat-l">営業利益</div><div class="mini-stat-v" style="color:${col};font-size:1.05rem">${fc(d.profit)}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // BEP cards
+  document.getElementById('bep-cards').innerHTML=STORES.map((s,i)=>{
+    const fixedExp=(Object.values(EXP_DATA).flatMap(d=>(d.store||[]).filter(r=>r.store===s&&r.cat==='家賃'))).reduce((sum,r)=>sum+(+r.amount||0),0);
+    const margRate=storeGross[i]>0?(storeGross[i]-storeExpOwn[i])/storeGross[i]:0.3;
+    const bep=margRate>0?Math.round(fixedExp/margRate):0;
+    const ok=storeGross[i]>=bep&&bep>0;
+    return `<div class="bep-card">
+      <div><div style="font-size:.7rem;color:#6b7280">${s}</div><div style="font-size:.92rem;font-weight:700">${bep>0?fc(bep)+' / 月':'経費データ不足'}</div></div>
+      <div style="font-size:.72rem;color:${ok?'#059669':'#9ca3af'}">${bep>0?(ok?'実績 '+fc(storeGross[i])+' ✓':'実績 '+fc(storeGross[i])+' △'):'家賃を入力後に算出'}</div>
+    </div>`;
+  }).join('');
+
+  // Goal cards (利益率目標 — 期間平均利益率で判定)
+  const gRateAch = goalRate>0? avgRate>=goalRate:null;
+  document.getElementById('goal-cards').innerHTML=[
+    ['目標利益率（選択期間）', goalRate>0?goalRate+'%':'未設定', goalRate>0?`実績 ${avgRate}% / ${gRateAch?'✓ 達成':'未達'}`:'-', goalRate>0&&!gRateAch],
+  ].map(([l,v,s,warn])=>`<div class="goal-card">
+    <div style="font-size:.7rem;color:#6b7280;margin-bottom:4px">${l}</div>
+    <div style="font-size:1.1rem;font-weight:700;color:${warn?'#dc2626':'#111827'}">${v}</div>
+    <div style="font-size:.72rem;color:${warn?'#dc2626':'#059669'};margin-top:3px">${s}</div>
+  </div>`).join('');
+
+  // Profit table
+  const tableRows=mdata.map(d=>{
+    const col=d.profit>=0?'#059669':'#dc2626';
+    return `<tr>
+      <td>${ymLabel(d.m)}</td>
+      <td style="font-weight:600">${fc(d.gross)}</td>
+      <td style="color:#d97706">${fc(d.pfFee)}</td>
+      <td>${fc(d.payout)}</td>
+      <td>${fc(d.expStore)}</td>
+      <td>${fc(d.expCommon)}</td>
+      <td style="font-weight:600">${fc(d.exp)}</td>
+      <td style="font-weight:700;color:${col}">${fc(d.profit)}</td>
+      <td style="color:${col}">${d.profitRate}%</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('profit-table').innerHTML=`
+    <table>
+      <thead><tr><th>月</th><th>売上（税込）</th><th>PF手数料</th><th>手取り</th><th>店舗別経費</th><th>共通経費</th><th>経費合計</th><th>営業利益</th><th>利益率</th></tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>`;
+}
+
+// ============================================================
+//  EXPENSE TREND CHARTS
+// ============================================================
+function drawExpTrend(){
+  const months = getAvailableMonths().filter(m=>EXP_DATA[m]);
+  if(!months.length){
+    document.getElementById('exptrend-kpi').innerHTML='<div class="kpi"><div class="kpi-l">データなし</div><div class="kpi-v" style="font-size:.95rem;color:#9ca3af">経費を入力してください</div></div>';
+    return;
+  }
+
+  const mdata = months.map(m=>{
+    const d=EXP_DATA[m]||{};
+    const store=(d.store||[]).reduce((s,r)=>s+(+r.amount||0),0);
+    const common=(d.common||[]).reduce((s,r)=>s+(+r.amount||0),0);
+    const byStore={};
+    STORES.forEach(s=>{ byStore[s]=(d.store||[]).filter(r=>r.store===s).reduce((sum,r)=>sum+(+r.amount||0),0); });
+    const byCat={};
+    [...(d.store||[]),...(d.common||[])].forEach(r=>{
+      byCat[r.cat]=(byCat[r.cat]||0)+(+r.amount||0);
+    });
+    return {m, store, common, total:store+common, byStore, byCat};
+  });
+
+  const grandTotal = mdata.reduce((s,d)=>s+d.total,0);
+  const avgMonthly = mdata.length>0? Math.round(grandTotal/mdata.length) : 0;
+  const latestTotal= mdata[mdata.length-1]?.total||0;
+  const prevTotal  = mdata[mdata.length-2]?.total||0;
+  const mom = mdata.length>=2? latestTotal-prevTotal : null;
+
+  document.getElementById('exptrend-kpi').innerHTML=[
+    ['経費合計（全期間）', fc(grandTotal), `${mdata.length}ヶ月分`],
+    ['月平均経費', fc(avgMonthly), '入力済み月の平均'],
+    ['直近月の経費', fc(latestTotal), ymLabel(mdata[mdata.length-1]?.m||'')],
+    ['前月比', mom!==null? (mom>=0?'＋':'')+fc(mom) : '-', mom!==null?(mom>=0?'増加':'削減'):''],
+  ].map(([l,v,s])=>`<div class="kpi"><div class="kpi-l">${l}</div><div class="kpi-v" style="font-size:1.2rem">${v}</div><div class="kpi-s">${s}</div></div>`).join('');
+
+  // Stacked monthly chart — use dynamic SC colors (with alpha)
+  mkChart('c-exp-monthly',{
+    type:'bar',
+    data:{
+      labels:mdata.map(d=>ymLabel(d.m)),
+      datasets:[
+        ...STORES.map(s=>({label:s, data:mdata.map(d=>d.byStore[s]||0), backgroundColor:(SC[s]||'#888')+'b3', borderRadius:3, stack:'s'})),
+        {label:'共通', data:mdata.map(d=>d.common), backgroundColor:'rgba(139,92,246,.55)', borderRadius:3, stack:'s'},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>'¥'+v.toLocaleString()}}}}
+  });
+
+  // Category donut
+  const catTotals = {};
+  mdata.forEach(d=>Object.entries(d.byCat).forEach(([c,v])=>{ catTotals[c]=(catTotals[c]||0)+v; }));
+  const catSorted = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
+  const catColors = ['#8b5cf6','#3b82f6','#10b981','#f59e0b','#ef4444','#06b6d4','#f97316','#84cc16'];
+  mkChart('c-exp-cat',{
+    type:'doughnut',
+    data:{labels:catSorted.map(([c])=>c), datasets:[{data:catSorted.map(([,v])=>v), backgroundColor:catColors, borderWidth:2, borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${fc(c.raw)}`}}}}
+  });
+
+  // Store total bar
+  const storeTotals = STORES.map(s=>mdata.reduce((sum,d)=>sum+(d.byStore[s]||0),0));
+  mkChart('c-exp-store',{
+    type:'bar',
+    data:{labels:STORES, datasets:[{label:'経費合計', data:storeTotals, backgroundColor:STORES.map(s=>SC[s]), borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{callback:v=>'¥'+v.toLocaleString()}}}}
+  });
+
+  // MoM change chart
+  mkChart('c-exp-mom',{
+    type:'bar',
+    data:{
+      labels:mdata.map(d=>ymLabel(d.m)),
+      datasets:STORES.map(s=>({
+        label:s,
+        data:mdata.map((d,i)=>i===0? d.byStore[s]||0 : (d.byStore[s]||0)-(mdata[i-1].byStore[s]||0)),
+        backgroundColor:SC[s], borderRadius:3,
+      }))
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},
+      scales:{y:{ticks:{callback:v=>'¥'+v.toLocaleString()}}}}
+  });
+
+  // Detail table
+  const allRows=[];
+  months.forEach(m=>{
+    const d=EXP_DATA[m]||{};
+    (d.store||[]).forEach(r=>allRows.push({m,type:'店舗別',store:r.store||'',cat:r.cat||'',name:r.name||'',amount:+r.amount||0}));
+    (d.common||[]).forEach(r=>allRows.push({m,type:'共通',store:'',cat:r.cat||'',name:r.name||'',amount:+r.amount||0}));
+  });
+  document.getElementById('exp-detail-tbl').innerHTML=`
+    <div style="font-size:.73rem;color:#6b7280;margin-bottom:6px">${allRows.length}件</div>
+    <table>
+      <thead><tr><th>月</th><th>種別</th><th>店舗</th><th>カテゴリ</th><th>科目名</th><th>金額</th></tr></thead>
+      <tbody>${allRows.map(r=>`<tr>
+        <td>${ymLabel(r.m)}</td>
+        <td><span class="badge ${r.type==='店舗別'?'b-gt':'b-sm'}">${r.type}</span></td>
+        <td>${r.store||'-'}</td>
+        <td>${r.cat}</td>
+        <td>${r.name||'-'}</td>
+        <td style="font-weight:600">${fc(r.amount)}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+}
+
+// ============================================================
+//  OVERVIEW KPI WITH EXPENSE DATA
+// ============================================================
+function drawKPIWithExp(){
+  const hasExp=Object.keys(EXP_DATA).length>0;
+  if(!hasExp) return;
+  const done=getFiltered('completed');
+  const filteredMonths=new Set(done.map(b=>b.useDate?ym(b.useDate):'').filter(Boolean));
+  const totalPayout = done.reduce((s,b)=>s+b.payout,0);
+  const sf = FILTER.store;
+  const totalExp = [...filteredMonths].reduce((sum,m)=>sum+getExpForMonth(m,sf).total, 0);
+  const profit      = totalPayout - totalExp;
+  const totalGross  = done.reduce((s,b)=>s+b.gross,0);
+  const profitRate  = totalGross>0? Math.round(profit/totalGross*1000)/10 : 0;
+  const existing=document.getElementById('kpi-main');
+  if(!existing) return;
+  existing.querySelectorAll('.kpi-profit').forEach(e=>e.remove());
+
+  // 全期間時は月平均
+  const isAll = !FILTER.month;
+  const nM = filteredMonths.size||1;
+  const dispExp    = isAll ? fc(Math.round(totalExp/nM))    : fc(totalExp);
+  const dispProfit = isAll ? fc(Math.round(profit/nM))      : fc(profit);
+  const expLabel   = isAll ? '月平均総経費' : '総経費';
+  const profLabel  = isAll ? '月平均営業利益' : '営業利益';
+  const storeLabel = sf!=='all' ? `${sf}の経費のみ` : '店舗別＋共通合計';
+
+  const extra=[
+    [expLabel,   dispExp,    storeLabel],
+    [profLabel,  dispProfit, `利益率 ${profitRate}%`],
+  ].map(([l,v,s])=>`<div class="kpi kpi-profit" style="border-top:3px solid ${profit>=0?'#10b981':'#ef4444'}"><div class="kpi-l">${l}</div><div class="kpi-v" style="color:${profit>=0?'#059669':'#dc2626'}">${v}</div><div class="kpi-s">${s}</div></div>`).join('');
+  existing.insertAdjacentHTML('beforeend',extra);
 }
 </script>
 </body>
